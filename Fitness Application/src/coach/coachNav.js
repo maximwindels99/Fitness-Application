@@ -17,17 +17,14 @@ export function updateCoachFabVisibility() {
   const fabSess = document.getElementById('floatingCoachAddSessionBtn');
   const fabEx = document.getElementById('floatingCoachAddExerciseBtn');
 
+  // Standaard alle FAB-knoppen verbergen
   if (fabTmpl) fabTmpl.style.display = 'none';
   if (fabSess) fabSess.style.display = 'none';
   if (fabEx) fabEx.style.display = 'none';
 
   if (clientsTab && clientsTab.style.display !== 'none') {
-    const tmplSubView = document.getElementById('coachClientTemplatesView');
-    const tmplForm = document.getElementById('coachNewTemplateCard');
-    if (tmplSubView && tmplSubView.style.display !== 'none') {
-      const isFormOpen = tmplForm && tmplForm.style.display !== 'none';
-      if (fabTmpl) fabTmpl.style.display = isFormOpen ? 'none' : 'flex';
-    }
+    // De schema FAB blijft permanent op 'none' staan omdat er altijd een vaste knop bovenaan de lijst staat
+    if (fabTmpl) fabTmpl.style.display = 'none';
   } else if (agendaTab && agendaTab.style.display !== 'none') {
     const sessForm = document.getElementById('coachSessionFormCard');
     const isFormOpen = sessForm && sessForm.style.display !== 'none';
@@ -45,9 +42,40 @@ export function updateCoachFabVisibility() {
  * @param {Object} renderCallbacks 
  */
 export function switchCoachTab(tab, renderCallbacks = {}) {
-  document.getElementById('coachTabClients').style.display = tab === 'clients' ? 'block' : 'none';
-  document.getElementById('coachTabAgenda').style.display = tab === 'agenda' ? 'block' : 'none';
-  document.getElementById('coachTabExercises').style.display = tab === 'exercises' ? 'block' : 'none';
+  const clientsTab = document.getElementById('coachTabClients');
+  const agendaTab = document.getElementById('coachTabAgenda');
+  const exTab = document.getElementById('coachTabExercises');
+
+  // Harde isolatie van de hoofdtabbladen
+  if (clientsTab) {
+    if (tab === 'clients') {
+      clientsTab.style.setProperty('display', 'flex', 'important');
+      clientsTab.style.setProperty('flex-direction', 'column', 'important');
+      clientsTab.style.setProperty('width', '100%', 'important');
+    } else {
+      clientsTab.style.setProperty('display', 'none', 'important');
+    }
+  }
+
+  if (agendaTab) {
+    if (tab === 'agenda') {
+      agendaTab.style.setProperty('display', 'flex', 'important');
+      agendaTab.style.setProperty('flex-direction', 'column', 'important');
+      agendaTab.style.setProperty('width', '100%', 'important');
+    } else {
+      agendaTab.style.setProperty('display', 'none', 'important');
+    }
+  }
+
+  if (exTab) {
+    if (tab === 'exercises') {
+      exTab.style.setProperty('display', 'flex', 'important');
+      exTab.style.setProperty('flex-direction', 'column', 'important');
+      exTab.style.setProperty('width', '100%', 'important');
+    } else {
+      exTab.style.setProperty('display', 'none', 'important');
+    }
+  }
 
   document.getElementById('coachTabClientsBtn')?.classList.toggle('active', tab === 'clients');
   document.getElementById('coachTabAgendaBtn')?.classList.toggle('active', tab === 'agenda');
@@ -73,9 +101,23 @@ export function switchCoachTab(tab, renderCallbacks = {}) {
 export function switchCoachClientSubTab(subTab, event, renderCallbacks = {}) {
   if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
 
-  document.getElementById('coachClientHistoryView').style.display = subTab === 'history' ? 'block' : 'none';
-  document.getElementById('coachClientChartView').style.display = subTab === 'chart' ? 'block' : 'none';
-  document.getElementById('coachClientTemplatesView').style.display = subTab === 'templates' ? 'block' : 'none';
+  const histView = document.getElementById('coachClientHistoryView');
+  const chartView = document.getElementById('coachClientChartView');
+  const tmplView = document.getElementById('coachClientTemplatesView');
+
+  // Zet de actieve subview op 100% breedte direct onder de sub-tabs
+  if (histView) {
+    histView.style.display = subTab === 'history' ? 'block' : 'none';
+    histView.style.width = '100%';
+  }
+  if (chartView) {
+    chartView.style.display = subTab === 'chart' ? 'block' : 'none';
+    chartView.style.width = '100%';
+  }
+  if (tmplView) {
+    tmplView.style.display = subTab === 'templates' ? 'block' : 'none';
+    tmplView.style.width = '100%';
+  }
 
   document.getElementById('coachClientSubTabHistBtn')?.classList.toggle('active', subTab === 'history');
   document.getElementById('coachClientSubTabChartBtn')?.classList.toggle('active', subTab === 'chart');

@@ -30,7 +30,8 @@
 html, body {
   height: 100%;
   max-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 body {
@@ -223,17 +224,19 @@ body {
 .floating-group input,
 .floating-group textarea,
 .floating-group select,
-.auth-select {
+.auth-select,
+#coachClientSearchInput {
   width: 100%;
-  padding: 18px 18px 8px 18px;
-  background: var(--bg-input);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--pill-radius);
-  color: var(--text-main);
+  padding: 14px 16px;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--pill-radius) !important;
+  color: var(--text-main) !important;
   font-size: 0.95rem;
   font-weight: 500;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -244,8 +247,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .floating-group input:focus,
 .floating-group textarea:focus,
 .floating-group select:focus,
-.auth-select:focus {
-  border-color: var(--gold-accent);
+.auth-select:focus,
+#coachClientSearchInput:focus {
+  border-color: var(--gold-accent) !important;
 }
 
 .floating-group label {
@@ -331,7 +335,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), color 0.25s ease;
 }
 
-/* UNIVERSELE DYNAMISCHE ROTATIE EN KIKKER-ORANJE KLEUR BIJ ACTIEVE TOGGLE */
 .btn-actions-toggle.active {
   border-color: var(--gold-accent) !important;
   color: var(--gold-accent) !important;
@@ -343,13 +346,63 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* --------------------------------------------------------------------------
-   7) TEMPLATE CREATOR
+   7) TEMPLATE CREATOR & SET-RIJEN (ISOLATIE TEGEN OVERFLOW)
    -------------------------------------------------------------------------- */
-#newTemplateCard {
+#newTemplateCard,
+#coachNewTemplateCard {
   max-height: calc(100vh - 160px);
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--gold-accent) transparent;
+  box-sizing: border-box;
+}
+
+/* Set header en set invoer grids in forms/modals */
+.tmpl-sets-header,
+.tmpl-set-row-grid,
+.set-headers-row,
+.set-input-row,
+.exercise-sets-row,
+.modal-card .set-headers-row,
+.modal-card .set-input-row {
+  display: grid !important;
+  grid-template-columns: 28px 1fr 1fr 28px !important;
+  gap: 6px !important;
+  align-items: center;
+  margin-bottom: 6px;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Driekolom set-rijen zonder actieknop (bijv. in historie edit) */
+.modal-card div[style*="grid-template-columns"],
+.modal-card .history-set-row {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Alle set invoervelden opsluiten binnen hun container */
+.tmpl-sets-rows input,
+.set-input-row input,
+.exercise-sets-row input,
+.modal-card input[type="number"],
+.tmpl-weight,
+.tmpl-reps,
+.set-kg-input,
+.set-reps-input {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 8px 4px !important;
+  height: 38px !important;
+  text-align: center !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -615,7 +668,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* --------------------------------------------------------------------------
-   11) CARDS & MAIN LAYOUT ZONDER GAP
+   11) CARDS & MAIN LAYOUT (STRIKT GEEN HORIZONTALE OVERFLOW)
    -------------------------------------------------------------------------- */
 #appSection {
   height: 100vh;
@@ -629,11 +682,13 @@ main {
   flex: 1;
   height: calc(100vh - 64px);
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 16px 85px 16px;
   z-index: 1;
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
+  box-sizing: border-box;
   scrollbar-width: thin;
   scrollbar-color: var(--gold-accent) transparent;
 }
@@ -652,10 +707,20 @@ main {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  overflow-x: hidden;
+}
+
+/* EXPLICIET OVERFLOW VISIBLE VOOR SPORTER SELECTIEKAART */
+.coach-select-card {
+  overflow: visible !important;
+  position: relative !important;
+  z-index: 100 !important;
 }
 
 .full-width {
-  width: 100%;
+  width: 100% !important;
 }
 
 .flex-1 {
@@ -753,8 +818,8 @@ main {
 
 .outline {
   background: transparent;
-  border: 1px solid var(--gold-accent);
-  color: var(--gold-accent);
+  border: 1px solid var(--gold-accent) !important;
+  color: var(--gold-accent) !important;
   padding: 10px 16px;
   border-radius: var(--radius);
 }
@@ -801,17 +866,144 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px 16px !important;
   z-index: 9999 !important;
+  box-sizing: border-box !important;
 }
 
 .modal-card {
   width: 100%;
   max-width: 420px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 84vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   border-radius: 20px;
   background: var(--bg-card);
   border: 1px solid var(--glass-border);
-  padding: 22px;
+  padding: 22px 18px !important;
+  box-sizing: border-box !important;
+}
+
+/* --------------------------------------------------------------------------
+   14) COACH DASHBOARD: ZWEVENDE DROPDOWN & SUB-TABS STYLING
+   -------------------------------------------------------------------------- */
+#coachTabClients {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+.custom-dropdown-wrapper {
+  position: relative !important;
+  width: 100%;
+}
+
+/* Zwevende custom dropdown menu met vrije uitloop naar beneden */
+.custom-dropdown-menu,
+#customClientDropdownList {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 9999 !important;
+  background: #121927 !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.95) !important;
+  padding: 6px !important;
+  margin-top: 6px !important;
+  max-height: 240px !important;
+  overflow-y: auto !important;
+}
+
+.custom-dropdown-item {
+  padding: 10px 14px !important;
+  color: var(--text-main) !important;
+  font-size: 0.88rem !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.custom-dropdown-item:hover,
+.custom-dropdown-item.active {
+  background: rgba(255, 159, 10, 0.18) !important;
+  color: var(--gold-accent) !important;
+}
+
+/* Sub-tabs op Coach View (100% verdeelde breedte onder elkaar) */
+#coachClientSubTabsContainer {
+  display: flex !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0px 0 16px 0 !important;
+}
+
+#coachClientSubTabsContainer button {
+  flex: 1 !important;
+  text-align: center !important;
+  background: var(--bg-input) !important;
+  color: var(--text-muted) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--pill-radius) !important;
+  padding: 10px 6px !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+
+#coachClientSubTabsContainer button:hover {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--text-main) !important;
+}
+
+#coachClientSubTabsContainer button.active,
+#coachClientSubTabsContainer button.bottom-nav-btn.active {
+  background: rgba(255, 159, 10, 0.15) !important;
+  color: var(--gold-accent) !important;
+  border: 1px solid var(--gold-accent) !important;
+  font-weight: 700 !important;
+}
+
+/* --------------------------------------------------------------------------
+   15) PROGRESSIE GRAFIEK & TIJDLIJN KNOOPPEN
+   -------------------------------------------------------------------------- */
+.timeline-filter-bar {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.timeline-btn {
+  flex: 1;
+  text-align: center;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 6px 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.timeline-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.timeline-btn.active {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--gold-accent);
+  border-color: var(--gold-accent);
+}
+
+.stat-box-fine.active {
+  border-color: var(--gold-accent) !important;
+  background: rgba(255, 159, 10, 0.08) !important;
 }

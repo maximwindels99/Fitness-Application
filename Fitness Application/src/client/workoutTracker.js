@@ -13,7 +13,9 @@ import { renderTemplates } from './clientTemplates.js';
  * Start of hervat de live workout-timer.
  */
 export function startWorkoutTimer(templateId) {
-  state.activeWorkout.templateId = templateId;
+  if (templateId) {
+    state.activeWorkout.templateId = templateId;
+  }
   state.activeWorkout.isTimerRunning = true;
   updateTimerUI();
 
@@ -29,13 +31,18 @@ export function startWorkoutTimer(templateId) {
 /**
  * Schakelt de pauzestand van de workout-timer.
  */
-export function togglePauseWorkoutTimer() {
+export function togglePauseWorkoutTimer(e) {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+
   if (state.activeWorkout.isTimerRunning) {
-    clearInterval(state.activeWorkout.intervalId);
-    state.activeWorkout.intervalId = null;
+    if (state.activeWorkout.intervalId) {
+      clearInterval(state.activeWorkout.intervalId);
+      state.activeWorkout.intervalId = null;
+    }
     state.activeWorkout.isTimerRunning = false;
-  } else if (state.activeWorkout.templateId) {
-    startWorkoutTimer(state.activeWorkout.templateId);
+  } else {
+    const tmplId = state.activeWorkout.templateId || (state.activeWorkout.template ? state.activeWorkout.template.id : null);
+    startWorkoutTimer(tmplId);
   }
   updateTimerUI();
 }
@@ -82,6 +89,7 @@ export function checkWorkoutCompletionState() {
 export function stopAndResetWorkoutUI(onRenderTemplates) {
   if (state.activeWorkout.intervalId) {
     clearInterval(state.activeWorkout.intervalId);
+    state.activeWorkout.intervalId = null;
   }
   
   resetActiveWorkoutState();
@@ -167,7 +175,7 @@ function updateActiveSetRowsUI(setsContainer) {
       if (idx === rows.length - 1 && rows.length > 1) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.style.cssText = 'width: 24px; height: 24px; border-radius: 50%; background: var(--danger); color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; cursor: pointer;';
+        btn.style.cssText = 'width: 34px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid rgba(255, 69, 58, 0.5); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer; transition: var(--transition); box-sizing: border-box;';
         btn.title = 'Set verwijderen';
         btn.innerHTML = '<i class="fa-solid fa-minus"></i>';
         btn.onclick = (e) => {
@@ -190,6 +198,8 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
   if (!template) return;
 
   state.activeWorkout.template = template;
+  state.activeWorkout.templateId = templateId;
+
   if (!state.activeWorkout.isTimerRunning) startWorkoutTimer(templateId);
 
   const activeCard = document.getElementById('activeWorkoutCard');
@@ -203,8 +213,22 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
 
   updateTimerUI();
 
+  // Zorg dat de hele pilvormige timer-badge reageert op een klik
+  const timerBox = document.querySelector('.timer-display-box');
+  if (timerBox) {
+    timerBox.style.cursor = 'pointer';
+    timerBox.onclick = togglePauseWorkoutTimer;
+
+    // Voorkom dat sub-elementen de klik opvangen
+    Array.from(timerBox.children).forEach(child => {
+      child.style.pointerEvents = 'none';
+    });
+  }
+
   const pauseBtn = document.getElementById('activeWorkoutPauseBtn');
-  if (pauseBtn) pauseBtn.onclick = togglePauseWorkoutTimer;
+  if (pauseBtn) {
+    pauseBtn.onclick = togglePauseWorkoutTimer;
+  }
 
   const finishBtn = document.getElementById('activeWorkoutFinishBtn');
   if (finishBtn) {
@@ -252,12 +276,12 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h4 style="margin:0; color:var(--white); font-size: 1.05rem; font-weight:700;">${exName}</h4>
         
-        <button type="button" class="btn-remove-active-ex" style="background: transparent; border: 1px solid rgba(255, 69, 58, 0.3); color: var(--danger); font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 8px; cursor: pointer;">
-          Verwijder
+        <button type="button" class="btn-remove-active-ex" title="Oefening verwijderen" style="background: transparent; border: 1px solid rgba(255, 69, 58, 0.4); color: var(--danger); font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
+          <i class="fa-solid fa-minus"></i>
         </button>
       </div>
       
-      <div class="active-set-header" style="display: grid; grid-template-columns: 28px 1fr 1fr 1fr 34px 24px; gap: 6px; align-items: center; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-align: center;">
+      <div class="active-set-header" style="display: grid; grid-template-columns: 28px 1fr 1fr 1fr 34px 34px; gap: 6px; align-items: center; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-align: center;">
         <span>SET</span>
         <span>KG</span>
         <span>REPS</span>
@@ -278,8 +302,8 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
 
     const addSetBtn = document.createElement('button');
     addSetBtn.type = 'button';
-    addSetBtn.style.cssText = 'background: transparent; border: none; color: var(--gold-accent); font-size: 0.82rem; font-weight: 600; cursor: pointer; margin-top: 8px; padding: 4px 0;';
-    addSetBtn.innerText = '+ Set toevoegen';
+    addSetBtn.style.cssText = 'background: transparent; border: 1px solid var(--gold-accent); color: var(--gold-accent); font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; cursor: pointer; margin-top: 8px; transition: var(--transition);';
+    addSetBtn.innerText = '+ Set';
     addSetBtn.onclick = () => addSetToActiveExercise(ex.exerciseId);
 
     exDiv.appendChild(addSetBtn);
@@ -352,7 +376,7 @@ function showCustomConfirm(title, text, onConfirm) {
 function createActiveSetRow(setNum, weight, reps, lastInfo, completed = false) {
   const row = document.createElement('div');
   row.className = 'active-set-row-grid';
-  row.style.cssText = 'display: grid; grid-template-columns: 28px 1fr 1fr 1fr 34px 24px; gap: 6px; align-items: center; margin-bottom: 8px;';
+  row.style.cssText = 'display: grid; grid-template-columns: 28px 1fr 1fr 1fr 34px 34px; gap: 6px; align-items: center; margin-bottom: 8px;';
 
   row.innerHTML = `
     <span class="set-label" style="text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">${setNum}</span>

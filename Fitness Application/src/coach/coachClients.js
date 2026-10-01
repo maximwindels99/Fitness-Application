@@ -17,7 +17,7 @@ export function getLoadedClients() {
 }
 
 /**
- * Bouwt en initialiseert de doorzoekbare custom cliënt-dropdown voor de coach.
+ * Bouwt en initialiseert de doorzoekbare zwevende cliënt-dropdown voor de coach.
  * @param {Function} onSelectCallback - Callback die wordt aangeroepen wanneer een sporter geselecteerd wordt
  */
 export function renderCoachClientDropdown(onSelectCallback) {
@@ -34,7 +34,8 @@ export function renderCoachClientDropdown(onSelectCallback) {
     input.disabled = true;
     hiddenVal.value = "";
     menu.style.display = "none";
-    document.getElementById('coachClientSubTabsContainer').style.display = 'none';
+    const subTabs = document.getElementById('coachClientSubTabsContainer');
+    if (subTabs) subTabs.style.display = 'none';
     return;
   }
 
@@ -56,7 +57,7 @@ export function renderCoachClientDropdown(onSelectCallback) {
     const filtered = clients.filter(c => c.name.toLowerCase().includes(filterText.toLowerCase()));
 
     if (filtered.length === 0) {
-      menu.innerHTML = '<div class="custom-dropdown-item disabled">Geen sporters gevonden</div>';
+      menu.innerHTML = '<div class="custom-dropdown-item disabled" style="padding: 10px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Geen sporters gevonden</div>';
       return;
     }
 
@@ -72,7 +73,8 @@ export function renderCoachClientDropdown(onSelectCallback) {
         input.value = client.name;
         menu.style.display = "none";
 
-        document.getElementById('coachClientSubTabsContainer').style.display = 'block';
+        const subTabs = document.getElementById('coachClientSubTabsContainer');
+        if (subTabs) subTabs.style.display = 'flex';
 
         if (typeof onSelectCallback === 'function') {
           onSelectCallback(client.email);
@@ -83,10 +85,21 @@ export function renderCoachClientDropdown(onSelectCallback) {
     });
   }
 
+  // Bij focus/klik: leeg het invoerveld tijdelijk om vanaf 0 te kunnen typen
+  input.onfocus = (e) => {
+    e.stopPropagation();
+    input.value = "";
+    populateList("");
+    menu.style.display = "block";
+  };
+
   input.onclick = (e) => {
     e.stopPropagation();
-    populateList("");
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
+    if (menu.style.display !== "block") {
+      input.value = "";
+      populateList("");
+      menu.style.display = "block";
+    }
   };
 
   input.oninput = () => {
@@ -94,13 +107,19 @@ export function renderCoachClientDropdown(onSelectCallback) {
     menu.style.display = "block";
   };
 
+  // Als de gebruiker buiten klikt zonder een nieuwe te kiezen, herstel de naam van de actieve sporter
   document.addEventListener('click', (e) => {
     if (!input.contains(e.target) && !menu.contains(e.target)) {
       menu.style.display = "none";
+      const activeClient = clients.find(c => c.email === state.selectedClientEmail);
+      if (activeClient) {
+        input.value = activeClient.name;
+      }
     }
   });
 
-  document.getElementById('coachClientSubTabsContainer').style.display = 'block';
+  const subTabs = document.getElementById('coachClientSubTabsContainer');
+  if (subTabs) subTabs.style.display = 'flex';
 
   if (typeof onSelectCallback === 'function' && state.selectedClientEmail) {
     onSelectCallback(state.selectedClientEmail);

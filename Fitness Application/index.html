@@ -234,73 +234,122 @@
 
     <!-- COACH VIEW -->
     <main id="coachView" style="display: none;">
-      <section id="coachTabClients" class="coach-tab-content">
-        <div class="card">
-          <label style="margin-bottom: 8px; display: block; font-weight: 700; color: #fff;">
-            <i class="fa-solid fa-users" style="color: var(--gold-accent); margin-right: 6px;"></i> Mijn Gekoppelde Sporters
+      
+      <!-- COACH TAB 1: SPORTERS BEHEREN -->
+      <section id="coachTabClients" class="coach-tab-content" style="display: flex; flex-direction: column; width: 100%;">
+        
+        <!-- SPORTER SELECTIE KAART MET LABEL EN ZOEKVELD OP 1 HORIZONTALE LIJN -->
+        <div class="card coach-select-card" style="margin-top: 14px; position: relative; overflow: visible !important; z-index: 100; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px !important;">
+          <label style="margin: 0; font-weight: 700; color: #fff; font-size: 0.95rem; white-space: nowrap;">
+            Mijn Sporters
           </label>
-          <div class="custom-dropdown-wrapper">
-            <input type="text" id="coachClientSearchInput" placeholder="-- Selecteer een sporter --" readonly>
+          <div class="custom-dropdown-wrapper" style="position: relative; flex: 1; max-width: 220px;">
+            <input type="text" id="coachClientSearchInput" placeholder="Zoek sporter..." autocomplete="off">
             <input type="hidden" id="coachClientSelect">
             <div id="customClientDropdownList" class="custom-dropdown-menu" style="display: none;"></div>
           </div>
         </div>
 
-        <div id="coachClientSubTabsContainer" style="display: none; margin-top: 15px;">
-          <div class="nav-tabs" style="margin-bottom: 15px;">
-            <button type="button" id="coachClientSubTabHistBtn" class="tab-btn active">Historie</button>
-            <button type="button" id="coachClientSubTabChartBtn" class="tab-btn">Chart</button>
-            <button type="button" id="coachClientSubTabTmplBtn" class="tab-btn">Schema's</button>
-          </div>
-          <div id="coachClientHistoryView"><div id="coachClientHistoryList"></div></div>
-          <div id="coachClientChartView" style="display: none;"></div>
-          <div id="coachClientTemplatesView" style="display: none;">
-            <div id="coachNewTemplateCard" class="card" style="display: none;">
-              <h3 style="margin-top: 0;">Sporter Schema Toewijzen</h3>
-              <input type="hidden" id="coachEditingTemplateId">
-              <div class="floating-group">
-                <input type="text" id="coachTemplateName" placeholder=" ">
-                <label for="coachTemplateName">Naam van het schema</label>
-              </div>
-              <div id="coachTemplateExercisesContainer"></div>
-              <button type="button" id="addExerciseToCoachTemplateBtn" class="outline full-width" style="margin-top: 10px;">+ Oefening Toevoegen</button>
-              <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="button" id="saveCoachTemplateBtn" class="btn-primary flex-1">Opslaan voor Sporter</button>
-                <button type="button" id="cancelCoachTemplateBtn" class="secondary">Annuleren</button>
-              </div>
-            </div>
-            <div id="coachClientTemplatesList"></div>
-          </div>
+        <!-- SUB-TABS BALK -->
+        <div id="coachClientSubTabsContainer" style="display: flex; gap: 8px; width: 100%; margin: 16px 0;">
+          <button type="button" id="coachClientSubTabHistBtn" class="bottom-nav-btn active" style="flex: 1;">Historie</button>
+          <button type="button" id="coachClientSubTabChartBtn" class="bottom-nav-btn" style="flex: 1;">Progressie</button>
+          <button type="button" id="coachClientSubTabTmplBtn" class="bottom-nav-btn" style="flex: 1;">Schema's</button>
         </div>
+
+        <!-- SUB-VIEWS ONDER DE TABS -->
+        <div id="coachClientHistoryView" style="width: 100%; display: block;">
+          <div id="coachClientHistoryList"></div>
+        </div>
+
+        <div id="coachClientChartView" style="width: 100%; display: none;"></div>
+
+        <div id="coachClientTemplatesView" style="width: 100%; display: none;">
+          <div id="coachNewTemplateCard" class="card" style="display: none; margin-bottom: 16px;">
+            <input type="hidden" id="coachEditingTemplateId">
+            <div class="floating-group">
+              <input type="text" id="coachTemplateName" placeholder=" ">
+              <label for="coachTemplateName">Naam van het schema</label>
+            </div>
+            <div id="coachTemplateExercisesContainer"></div>
+            <button type="button" id="addExerciseToCoachTemplateBtn" class="outline full-width" style="margin-top: 10px;">+ Oefening Toevoegen</button>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+              <button type="button" id="saveCoachTemplateBtn" class="btn-primary flex-1">Opslaan voor Sporter</button>
+              <button type="button" id="cancelCoachTemplateBtn" class="secondary">Annuleren</button>
+            </div>
+          </div>
+          <div id="coachClientTemplatesList"></div>
+        </div>
+
       </section>
 
-      <section id="coachTabAgenda" class="coach-tab-content" style="display: none;">
-        <div id="coachSessionFormCard" class="card" style="display: none;">
-          <h3>PT-Sessie Inplannen</h3>
+      <!-- COACH TAB: AGENDA -->
+      <section id="coachTabAgenda" class="tab-content coach-tab-content" style="display: none; width: 100%; margin-top: 14px;">
+        
+        <!-- FORMULIER VOOR HET INPLANNEN/BEWERKEN VAN EEN SESSIE -->
+        <div id="coachSessionFormCard" class="card" style="display: none; margin-bottom: 16px;">
+          <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 1.15rem; color: #fff;">Sessie Inplannen</h3>
           <input type="hidden" id="editingSessionId">
-          <div class="floating-group"><select id="sessionClientSelect" class="auth-select"></select><label class="static-label">Sporter</label></div>
-          <div class="floating-group"><input type="date" id="sessionDate"><label class="static-label">Datum</label></div>
-          <div class="floating-group"><input type="time" id="sessionTime"><label class="static-label">Tijd</label></div>
-          <div class="floating-group"><input type="text" id="sessionType" placeholder=" "><label for="sessionType">Type sessie (bijv. PT)</label></div>
-          <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button type="button" id="saveSessionBtn" class="btn-primary flex-1">Sessie Opslaan</button>
-            <button type="button" id="cancelSessionBtn" class="secondary">Annuleren</button>
+          
+          <!-- SPORTER SELECTIE (SCHOON EN ZONDER OVERLAPPING) -->
+          <div style="margin-bottom: 14px;">
+            <select id="sessionClientSelect" class="auth-select" style="width: 100%; height: 42px !important; background: var(--bg-input) !important; color: #fff !important; border: 1px solid var(--glass-border) !important; border-radius: var(--pill-radius) !important; padding: 0 14px !important; outline: none;"></select>
+          </div>
+
+          <!-- DATUM EN TIJDSTIP STAKEN NAAST ELKAAR -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+            <div>
+              <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); margin-bottom: 6px; text-transform: uppercase;">Datum</label>
+              <input type="date" id="sessionDate" class="auth-select" style="width: 100%; height: 42px !important; background: var(--bg-input) !important; color: #fff !important; border: 1px solid var(--glass-border) !important; border-radius: var(--pill-radius) !important; padding: 0 12px !important; color-scheme: dark; outline: none;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); margin-bottom: 6px; text-transform: uppercase;">Tijdstip</label>
+              <input type="time" id="sessionTime" class="auth-select" style="width: 100%; height: 42px !important; background: var(--bg-input) !important; color: #fff !important; border: 1px solid var(--glass-border) !important; border-radius: var(--pill-radius) !important; padding: 0 12px !important; color-scheme: dark; outline: none;">
+            </div>
+          </div>
+
+          <!-- TYPE SESSIE -->
+          <div class="floating-group" style="margin-bottom: 16px;">
+            <input type="text" id="sessionType" placeholder=" " autocomplete="off">
+            <label for="sessionType">Type Sessie (bijv. Personal Training)</label>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 18px;">
+            <button type="button" id="saveSessionBtn" class="btn-primary flex-1 btn-pill">Sessie Opslaan</button>
+            <button type="button" id="cancelSessionBtn" class="secondary btn-pill" style="padding: 10px 20px;">Annuleren</button>
           </div>
         </div>
 
-        <div id="coachAgendaListContainer" class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0;">Ingeplande Sessies</h3>
-            <button type="button" id="btnToggleAgendaHistory" class="btn-action-icon secondary"><i class="fa-regular fa-clock"></i></button>
+        <div id="coachAgendaListContainer">
+          <div class="card card-glass" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <h3 style="margin: 0; color: var(--white); font-size: 1.15rem; font-weight: 800;">Ingeplande Sessies</h3>
+              <button type="button" id="btnToggleAgendaHistory" title="Toon/verberg geschiedenis" style="background: var(--bg-input); border: 1px solid var(--glass-border); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition);">
+                <i class="fa-regular fa-clock" style="font-size: 1.1rem; color: var(--text-muted);"></i>
+              </button>
+            </div>
+
+            <!-- FILTERS BALK IN AQM HUISSTIJL -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <select id="agendaFilterClientSelect" class="auth-select" style="padding: 10px 12px !important; font-size: 0.85rem; height: 42px !important; background: var(--bg-input) !important; color: #fff !important; border: 1px solid var(--glass-border) !important; border-radius: var(--pill-radius) !important; outline: none;">
+                <option value="">Alle Sporters</option>
+              </select>
+
+              <input type="date" id="agendaFilterDate" class="auth-select" style="padding: 10px 12px !important; font-size: 0.85rem; height: 42px !important; background: var(--bg-input) !important; color: #fff !important; border: 1px solid var(--glass-border) !important; border-radius: var(--pill-radius) !important; color-scheme: dark; outline: none;">
+            </div>
           </div>
-          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-            <select id="agendaFilterClientSelect" class="auth-select flex-1"></select>
-            <input type="date" id="agendaFilterDate" style="width: 130px;">
-          </div>
+
+          <!-- BREDE ONGEVULDE KNOP OM EEN SESSIE IN TE PLANNEN -->
+          <button type="button" id="topCreateSessionBtn" class="outline full-width" style="margin-bottom: 14px; padding: 12px; border-radius: var(--pill-radius); font-weight: 700; font-size: 0.92rem;">
+            + Sessie Inplannen
+          </button>
+
+          <!-- LIJST MET SESSIES -->
           <div id="coachSessionsList"></div>
         </div>
       </section>
 
+      <!-- COACH TAB 3: OEFENINGEN -->
       <section id="coachTabExercises" class="coach-tab-content" style="display: none;">
         <div id="coachNewExerciseCard" class="card" style="display: none;">
           <h3>Nieuwe Oefening Toevoegen</h3>
@@ -344,7 +393,6 @@
       </section>
 
       <button type="button" id="floatingCoachAddTemplateBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
-      <button type="button" id="floatingCoachAddSessionBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
       <button type="button" id="floatingCoachAddExerciseBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
 
       <nav id="coachBottomNav" class="bottom-nav">

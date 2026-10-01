@@ -209,6 +209,19 @@ export function toggleNewTemplateForm() {
 }
 
 /**
+ * Werkt de nummering van alle oefeningenblokken in het formulier bij.
+ */
+function updateExerciseNumbersUI() {
+  const items = document.querySelectorAll('#templateExercisesContainer .template-exercise-item');
+  items.forEach((item, index) => {
+    const label = item.querySelector('.exercise-num-label');
+    if (label) {
+      label.innerText = `OEFENING ${index + 1}:`;
+    }
+  });
+}
+
+/**
  * Voegt een oefeningenblok toe.
  */
 export function addExerciseToTemplate(selectedExId = "", setsData = null) {
@@ -217,17 +230,26 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
 
   const exerciseDiv = document.createElement('div');
   exerciseDiv.className = 'template-exercise-item';
+  exerciseDiv.style.cssText = 'margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--glass-border);';
 
   const sortedDatabase = getFullExerciseDatabase().sort((a, b) => a.name.localeCompare(b.name));
   const selectedEx = sortedDatabase.find(ex => ex.id === selectedExId) || null;
 
   exerciseDiv.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <label style="margin:0; font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); text-transform: uppercase; letter-spacing: 0.5px;">OEFENING:</label>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <label class="exercise-num-label" style="margin:0; font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); text-transform: uppercase; letter-spacing: 0.5px;">OEFENING:</label>
       
-      <button type="button" class="btn-ex-info" style="background: transparent; border: 1px solid var(--glass-border); color: var(--gold-accent); font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-        <i class="fa-solid fa-circle-info"></i> Info
-      </button>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <!-- INFO KNOP: Standaard verborgen als er nog geen oefening gekozen is -->
+        <button type="button" class="btn-ex-info" style="background: transparent; border: 1px solid var(--glass-border); color: var(--gold-accent); font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: ${selectedEx ? 'flex' : 'none'}; align-items: center; gap: 4px;">
+          <i class="fa-solid fa-circle-info"></i> Info
+        </button>
+
+        <!-- SUBTIELE VERWIJDER KNOP (ENKEL EEN STREEPJE) -->
+        <button class="btn-remove-ex-block" type="button" title="Oefening verwijderen" style="background: transparent; border: 1px solid rgba(255, 69, 58, 0.4); color: var(--danger); font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 12px; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center;">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+      </div>
     </div>
 
     <div class="client-select-wrapper-inline" style="position: relative; width: 100%; margin-bottom: 12px;">
@@ -261,13 +283,9 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
 
     <div class="tmpl-sets-rows"></div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 4px;">
-      <button class="btn-add-set" type="button" style="background: transparent; border: none; color: var(--gold-accent); font-size: 0.82rem; font-weight: 600; cursor: pointer; padding: 4px 0;">
-        + Set toevoegen
-      </button>
-
-      <button class="btn-remove-ex-block" type="button" style="background: transparent; border: 1px solid rgba(255, 69, 58, 0.4); color: var(--danger); font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; cursor: pointer; transition: var(--transition);">
-        Verwijder
+    <div style="display: flex; justify-content: flex-start; align-items: center; margin-top: 10px; padding-top: 4px;">
+      <button class="btn-add-set" type="button" style="background: transparent; border: 1px solid var(--gold-accent); color: var(--gold-accent); font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; cursor: pointer; transition: var(--transition);">
+        + Set
       </button>
     </div>
   `;
@@ -286,10 +304,7 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
 
   infoBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!hiddenInput.value) {
-      alert("Kies eerst een oefening om de instructies te bekijken.");
-      return;
-    }
+    if (!hiddenInput.value) return;
     const isHidden = infoBox.style.display === 'none';
     
     if (isHidden) {
@@ -346,6 +361,8 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
         label.style.color = '#ffffff';
         list.style.display = 'none';
         infoBox.style.display = 'none';
+        
+        infoBtn.style.display = 'flex';
       };
 
       item.onmouseenter = () => { if (ex.id !== hiddenInput.value) item.style.background = 'rgba(255, 255, 255, 0.06)'; };
@@ -383,9 +400,11 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
   exerciseDiv.querySelector('.btn-remove-ex-block').addEventListener('click', (e) => {
     e.stopPropagation();
     exerciseDiv.remove();
+    updateExerciseNumbersUI();
   });
 
   container.appendChild(exerciseDiv);
+  updateExerciseNumbersUI();
 
   const rowsContainer = exerciseDiv.querySelector('.tmpl-sets-rows');
   if (setsData && setsData.length > 0) {
@@ -403,15 +422,18 @@ export function addExerciseToTemplate(selectedExId = "", setsData = null) {
   });
 }
 
+/**
+ * Maakt een set-invoerrij aan met strak gecentreerde paddings.
+ */
 function createTemplateSetRow(weight, reps) {
   const row = document.createElement('div');
   row.className = 'tmpl-set-row-grid';
   row.style.cssText = 'display: grid; grid-template-columns: 32px 1fr 1fr 32px; gap: 8px; align-items: center; margin-bottom: 6px;';
   row.innerHTML = `
     <span class="set-label" style="text-align: center; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">1</span>
-    <input type="number" class="tmpl-weight" placeholder="0" value="${weight}" min="0" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; text-align: center;">
-    <input type="number" class="tmpl-reps" placeholder="0" value="${reps}" min="0" style="padding: 8px; background: var(--bg-input); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; text-align: center;">
-    <div class="set-action-cell" style="display: flex; justify-content: center; align-items: center; width: 32px; height: 32px;"></div>
+    <input type="number" class="tmpl-weight" placeholder="0" value="${weight}" min="0" style="padding: 10px 8px !important; height: 38px !important; line-height: 1; background: var(--bg-input); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; text-align: center; font-weight: 600; outline: none;">
+    <input type="number" class="tmpl-reps" placeholder="0" value="${reps}" min="0" style="padding: 10px 8px !important; height: 38px !important; line-height: 1; background: var(--bg-input); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; text-align: center; font-weight: 600; outline: none;">
+    <div class="set-action-cell" style="display: flex; justify-content: center; align-items: center; width: 32px; height: 38px;"></div>
   `;
   return row;
 }
@@ -430,7 +452,7 @@ function updateSetRowsUI(rowsContainer) {
       if (idx === rows.length - 1 && rows.length > 1) {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.style.cssText = 'width: 26px; height: 26px; border-radius: 50%; background: var(--danger); color: #fff; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; cursor: pointer;';
+        btn.style.cssText = 'width: 32px; height: 38px; border-radius: 8px; background: transparent; border: 1px solid rgba(255, 69, 58, 0.5); color: var(--danger); display: flex; align-items: center; justify-content: center; font-size: 0.82rem; cursor: pointer; transition: var(--transition); box-sizing: border-box;';
         btn.title = 'Laatste set verwijderen';
         btn.innerHTML = '<i class="fa-solid fa-minus"></i>';
         btn.onclick = (e) => {
