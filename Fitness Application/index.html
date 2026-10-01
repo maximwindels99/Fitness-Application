@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AQM Fitness App</title>
+
+  <!-- GOOGLE FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FONT AWESOME ICONS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- GROOT CENTRAAL WATERMERK OP DE ACHTERGROND -->
+  <div class="bg-watermark-overlay">
+    <img src="Images/icon.png" alt="AQM Watermark" class="watermark-img">
+  </div>
+
+  <!-- AUTHENTICATIE SECTIE -->
+  <section id="authSection" class="auth-wrapper" style="display: flex;">
+    <div class="auth-container card">
+      <div class="auth-logo-box">
+        <img src="Images/logo.png" alt="AQM Logo" class="auth-logo">
+      </div>
+
+      <!-- INLOGGEN -->
+      <div id="loginCard">
+        <h3 class="auth-title">Your journey starts here</h3>
+        <p class="auth-tagline">Take the first step</p>
+        
+        <form onsubmit="event.preventDefault();" class="auth-form">
+          <div class="floating-group">
+            <input type="email" id="loginEmail" placeholder=" " required autocomplete="off">
+            <label for="loginEmail">E-mailadres</label>
+          </div>
+
+          <div class="floating-group">
+            <input type="password" id="loginPassword" placeholder=" " required>
+            <label for="loginPassword">Wachtwoord</label>
+          </div>
+
+          <button type="button" id="loginBtn" class="btn-primary full-width btn-pill">Inloggen</button>
+        </form>
+
+        <div class="auth-divider">
+          <span>of log in met</span>
+        </div>
+
+        <div class="social-login-grid">
+          <button type="button" class="social-btn" title="Inloggen met Apple"><i class="fa-brands fa-apple"></i></button>
+          <button type="button" class="social-btn" title="Inloggen met Google"><i class="fa-brands fa-google"></i></button>
+          <button type="button" class="social-btn" title="Inloggen met Facebook"><i class="fa-brands fa-facebook-f"></i></button>
+        </div>
+
+        <div class="auth-footer">
+          <span>Nog geen account?</span> <a href="#" id="toRegisterLink" class="auth-link">Registreer hier</a>
+        </div>
+      </div>
+
+      <!-- REGISTREREN -->
+      <div id="registerCard" style="display: none;">
+        <h3 class="auth-title">Maak een Account</h3>
+        <p class="auth-tagline">Vul je gegevens in om te beginnen</p>
+        <form onsubmit="event.preventDefault();" class="auth-form">
+          
+          <div class="floating-group">
+            <input type="text" id="regFirstName" placeholder=" " required autocomplete="off">
+            <label for="regFirstName">Voornaam</label>
+          </div>
+
+          <div class="floating-group">
+            <input type="text" id="regLastName" placeholder=" " required autocomplete="off">
+            <label for="regLastName">Achternaam</label>
+          </div>
+
+          <div class="floating-group">
+            <input type="text" id="regDob" placeholder=" " onfocus="(this.type='date')" onblur="if(!this.value)this.type='text'" required>
+            <label for="regDob">Geboortedatum</label>
+          </div>
+
+          <div class="floating-group">
+            <input type="email" id="regEmail" placeholder=" " required autocomplete="off">
+            <label for="regEmail">E-mailadres</label>
+          </div>
+
+          <div class="floating-group">
+            <input type="password" id="regPassword" placeholder=" " required>
+            <label for="regPassword">Wachtwoord</label>
+          </div>
+
+          <div class="role-selection-wrapper">
+            <div class="role-radio-grid">
+              <label class="role-radio-card">
+                <input type="radio" name="regRoleRadio" value="client" checked>
+                <span class="role-radio-btn">
+                  <span class="custom-radio-dot"></span>
+                  Sporter (Client)
+                </span>
+              </label>
+
+              <label class="role-radio-card">
+                <input type="radio" name="regRoleRadio" value="coach">
+                <span class="role-radio-btn">
+                  <span class="custom-radio-dot"></span>
+                  Coach
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="registerBtn" class="btn-primary full-width btn-pill">Registreren</button>
+        </form>
+
+        <div class="auth-footer">
+          <span>Heb je al een account?</span> <a href="#" id="toLoginLink" class="auth-link">Inloggen</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APPLICATIE HOOFDSECTIE -->
+  <section id="appSection" style="display: none;">
+    <header class="app-header">
+      <div class="header-brand">
+        <img src="Images/icon.png" alt="AQM Logo" class="header-logo">
+        <span class="brand-title" style="font-weight: 800; font-size: 1.15rem; color: #ffffff; letter-spacing: 0.5px;">
+          AQM <span style="color: var(--gold-accent);">FITNESS</span>
+        </span>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="profileModalTrigger" class="header-user-pill" title="Profiel & Instellingen">
+          <span id="userHeaderFirstName" class="user-pill-name">Sporter</span>
+          <div class="user-pill-icon"><i class="fa-regular fa-user"></i></div>
+        </button>
+      </div>
+    </header>
+
+    <!-- SPORTER VIEW -->
+    <main id="clientView">
+      
+      <!-- ACTIEVE WORKOUT CONTAINER -->
+      <div id="activeWorkoutCard" style="display: none;">
+        
+        <!-- VASTE DEKKENDE HEADER ZONDER GAP -->
+        <div class="active-workout-header">
+          <div>
+            <span class="active-label">ACTIEVE WORKOUT</span>
+            <h3 id="activeWorkoutTitle" style="margin: 0; color: var(--text-main);">Workout</h3>
+          </div>
+          
+          <div class="timer-display-box">
+            <i class="fa-regular fa-clock"></i>
+            <span id="activeWorkoutTimerText">00:00</span>
+            <button type="button" id="activeWorkoutPauseBtn" class="btn-timer-pause" title="Pauzeren/Hervatten">
+              <i class="fa-solid fa-pause"></i>
+            </button>
+          </div>
+        </div>
+
+        <div id="activeExercisesContainer"></div>
+
+        <!-- ACTIEBALK ONDERAAN -->
+        <div class="active-workout-actions">
+          <button type="button" id="activeWorkoutFinishBtn" class="btn-primary flex-1 btn-finish-disabled">
+            <i class="fa-solid fa-check" style="margin-right: 6px;"></i> Workout Voltooien
+          </button>
+          <button type="button" id="activeWorkoutCancelBtn" class="secondary" style="padding: 12px 18px; border-radius: var(--radius); font-weight: 600;">
+            Annuleren
+          </button>
+        </div>
+      </div>
+
+      <section id="tabTemplates" class="client-tab-content">
+        <div id="newTemplateCard" class="card" style="display: none;">
+          <h3 style="margin-top: 0;">Workoutschema Maken</h3>
+          <input type="hidden" id="editingTemplateId">
+          <div class="floating-group" style="margin-top: 10px;">
+            <input type="text" id="templateName" placeholder=" " autocomplete="off">
+            <label for="templateName">Naam van het schema (bijv. Push Day)</label>
+          </div>
+          <div id="templateExercisesContainer"></div>
+          <button type="button" id="addExerciseToTemplateBtn" class="outline full-width" style="margin-top: 12px;">+ Oefening Toevoegen</button>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button type="button" id="saveTemplateBtn" class="btn-primary flex-1">Schema Opslaan</button>
+            <button type="button" id="cancelTemplateBtn" class="secondary">Annuleren</button>
+          </div>
+        </div>
+        <div id="templatesList"></div>
+      </section>
+
+      <section id="tabHistory" class="client-tab-content" style="display: none;">
+        <div id="historyList"></div>
+      </section>
+
+      <section id="tabProgress" class="client-tab-content" style="display: none;">
+        <div class="card progress-card"></div>
+      </section>
+
+      <section id="tabSessions" class="client-tab-content" style="display: none;">
+        <div id="clientSessionsList"></div>
+      </section>
+
+      <button type="button" id="floatingAddTemplateBtn" class="fab-btn" title="Nieuw Schema Maken">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+
+      <!-- BOTTOM NAVIGATION SPORTER -->
+      <nav id="bottomNav" class="bottom-nav">
+        <button type="button" id="tabTemplatesBtn" class="bottom-nav-btn active">
+          <div class="nav-icon-wrap"><i class="fa-solid fa-list-check"></i></div>
+          <span>Schema's</span>
+        </button>
+        <button type="button" id="tabHistoryBtn" class="bottom-nav-btn">
+          <div class="nav-icon-wrap"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <span>Historie</span>
+        </button>
+        <button type="button" id="tabProgressBtn" class="bottom-nav-btn">
+          <div class="nav-icon-wrap"><i class="fa-solid fa-chart-line"></i></div>
+          <span>Progressie</span>
+        </button>
+        <button type="button" id="tabSessionsBtn" class="bottom-nav-btn">
+          <div class="nav-icon-wrap"><i class="fa-regular fa-calendar-check"></i></div>
+          <span>Sessies</span>
+        </button>
+      </nav>
+    </main>
+
+    <!-- COACH VIEW -->
+    <main id="coachView" style="display: none;">
+      <section id="coachTabClients" class="coach-tab-content">
+        <div class="card">
+          <label style="margin-bottom: 8px; display: block; font-weight: 700; color: #fff;">
+            <i class="fa-solid fa-users" style="color: var(--gold-accent); margin-right: 6px;"></i> Mijn Gekoppelde Sporters
+          </label>
+          <div class="custom-dropdown-wrapper">
+            <input type="text" id="coachClientSearchInput" placeholder="-- Selecteer een sporter --" readonly>
+            <input type="hidden" id="coachClientSelect">
+            <div id="customClientDropdownList" class="custom-dropdown-menu" style="display: none;"></div>
+          </div>
+        </div>
+
+        <div id="coachClientSubTabsContainer" style="display: none; margin-top: 15px;">
+          <div class="nav-tabs" style="margin-bottom: 15px;">
+            <button type="button" id="coachClientSubTabHistBtn" class="tab-btn active">Historie</button>
+            <button type="button" id="coachClientSubTabChartBtn" class="tab-btn">Chart</button>
+            <button type="button" id="coachClientSubTabTmplBtn" class="tab-btn">Schema's</button>
+          </div>
+          <div id="coachClientHistoryView"><div id="coachClientHistoryList"></div></div>
+          <div id="coachClientChartView" style="display: none;"></div>
+          <div id="coachClientTemplatesView" style="display: none;">
+            <div id="coachNewTemplateCard" class="card" style="display: none;">
+              <h3 style="margin-top: 0;">Sporter Schema Toewijzen</h3>
+              <input type="hidden" id="coachEditingTemplateId">
+              <div class="floating-group">
+                <input type="text" id="coachTemplateName" placeholder=" ">
+                <label for="coachTemplateName">Naam van het schema</label>
+              </div>
+              <div id="coachTemplateExercisesContainer"></div>
+              <button type="button" id="addExerciseToCoachTemplateBtn" class="outline full-width" style="margin-top: 10px;">+ Oefening Toevoegen</button>
+              <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" id="saveCoachTemplateBtn" class="btn-primary flex-1">Opslaan voor Sporter</button>
+                <button type="button" id="cancelCoachTemplateBtn" class="secondary">Annuleren</button>
+              </div>
+            </div>
+            <div id="coachClientTemplatesList"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="coachTabAgenda" class="coach-tab-content" style="display: none;">
+        <div id="coachSessionFormCard" class="card" style="display: none;">
+          <h3>PT-Sessie Inplannen</h3>
+          <input type="hidden" id="editingSessionId">
+          <div class="floating-group"><select id="sessionClientSelect" class="auth-select"></select><label class="static-label">Sporter</label></div>
+          <div class="floating-group"><input type="date" id="sessionDate"><label class="static-label">Datum</label></div>
+          <div class="floating-group"><input type="time" id="sessionTime"><label class="static-label">Tijd</label></div>
+          <div class="floating-group"><input type="text" id="sessionType" placeholder=" "><label for="sessionType">Type sessie (bijv. PT)</label></div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button type="button" id="saveSessionBtn" class="btn-primary flex-1">Sessie Opslaan</button>
+            <button type="button" id="cancelSessionBtn" class="secondary">Annuleren</button>
+          </div>
+        </div>
+
+        <div id="coachAgendaListContainer" class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0;">Ingeplande Sessies</h3>
+            <button type="button" id="btnToggleAgendaHistory" class="btn-action-icon secondary"><i class="fa-regular fa-clock"></i></button>
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+            <select id="agendaFilterClientSelect" class="auth-select flex-1"></select>
+            <input type="date" id="agendaFilterDate" style="width: 130px;">
+          </div>
+          <div id="coachSessionsList"></div>
+        </div>
+      </section>
+
+      <section id="coachTabExercises" class="coach-tab-content" style="display: none;">
+        <div id="coachNewExerciseCard" class="card" style="display: none;">
+          <h3>Nieuwe Oefening Toevoegen</h3>
+          <div class="floating-group"><input type="text" id="newExName" placeholder=" "><label for="newExName">Naam oefening</label></div>
+          <div class="floating-group">
+            <select id="newExCategory" class="auth-select">
+              <option value="Borst">Borst</option>
+              <option value="Rug">Rug</option>
+              <option value="Benen">Benen</option>
+              <option value="Schouders">Schouders</option>
+              <option value="Armen">Armen</option>
+              <option value="Buik">Buik</option>
+            </select>
+            <label class="static-label">Categorie</label>
+          </div>
+          <div class="floating-group">
+            <textarea id="newExInstructions" placeholder=" " rows="3" style="width: 100%; background: var(--bg-input); border: 1px solid var(--glass-border); color: var(--text-main); border-radius: 12px; padding: 12px;"></textarea>
+            <label for="newExInstructions">Instructies / Uitvoering...</label>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button type="button" id="saveCustomExBtn" class="btn-primary flex-1">Toevoegen aan Databank</button>
+            <button type="button" id="cancelCustomExBtn" class="secondary">Annuleren</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0;">Oefeningen Databank</h3>
+            <select id="coachExerciseCategoryFilter" class="auth-select" style="width: 130px;">
+              <option value="">Alle</option>
+              <option value="Borst">Borst</option>
+              <option value="Rug">Rug</option>
+              <option value="Benen">Benen</option>
+              <option value="Schouders">Schouders</option>
+              <option value="Armen">Armen</option>
+              <option value="Buik">Buik</option>
+            </select>
+          </div>
+          <div id="coachExercisesList"></div>
+        </div>
+      </section>
+
+      <button type="button" id="floatingCoachAddTemplateBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
+      <button type="button" id="floatingCoachAddSessionBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
+      <button type="button" id="floatingCoachAddExerciseBtn" class="fab-btn" style="display: none;"><i class="fa-solid fa-plus"></i></button>
+
+      <nav id="coachBottomNav" class="bottom-nav">
+        <button type="button" id="coachTabClientsBtn" class="bottom-nav-btn active">
+          <div class="nav-icon-wrap"><i class="fa-solid fa-users"></i></div>
+          <span>Sporters</span>
+        </button>
+        <button type="button" id="coachTabAgendaBtn" class="bottom-nav-btn">
+          <div class="nav-icon-wrap"><i class="fa-regular fa-calendar-days"></i></div>
+          <span>Agenda</span>
+        </button>
+        <button type="button" id="coachTabExercisesBtn" class="bottom-nav-btn">
+          <div class="nav-icon-wrap"><i class="fa-solid fa-dumbbell"></i></div>
+          <span>Oefeningen</span>
+        </button>
+      </nav>
+    </main>
+  </section>
+
+  <!-- PROFIEL & INSTELLINGEN MODAL -->
+  <div id="profileModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 style="margin: 0; color: var(--text-main); font-size: 1.2rem; font-weight: 700;">Profiel & Instellingen</h3>
+        <button type="button" id="closeProfileModalBtn" class="btn-action-icon secondary" style="border-radius: 50%; width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="profile-user-card" style="text-align: center; padding: 16px; background: rgba(255, 255, 255, 0.03); border-radius: 14px; border: 1px solid var(--glass-border); margin-bottom: 18px;">
+        <strong id="modalUserName" style="font-size: 1.15rem; color: var(--gold-accent); display: block; font-weight: 700;">-</strong>
+        <span id="modalUserRoleBadge" class="exercise-badge" style="margin-top: 8px; display: inline-block;">-</span>
+      </div>
+
+      <div id="modalClientSection" style="display: none; margin-bottom: 20px;">
+        <div id="clientUnlinkedBox">
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <div class="floating-group" style="flex: 1; margin: 0;">
+              <input type="text" id="inputCoachCode" placeholder=" " style="text-transform: uppercase;">
+              <label for="inputCoachCode">Koppelen aan Coach ID</label>
+            </div>
+            <button type="button" id="btnLinkCoachCode" class="btn-primary" style="padding: 13px 18px; white-space: nowrap; border-radius: var(--pill-radius); font-size: 0.9rem;">Koppelen</button>
+          </div>
+        </div>
+
+        <div id="clientLinkedBox" style="display: none; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 16px; text-align: center;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block; font-weight: 600; text-transform: uppercase;">Mijn Coach</span>
+          <strong id="linkedCoachNameDisplay" style="font-size: 1.15rem; color: var(--gold-accent); display: block; font-weight: 700; margin: 4px 0 2px 0;">-</strong>
+          <span id="linkedCoachCodeDisplay" style="font-size: 0.8rem; color: var(--text-muted); display: block; font-weight: 500; margin-bottom: 14px;">-</span>
+          <button type="button" id="btnUnlinkCoach" class="outline full-width btn-pill" style="border-color: var(--danger); color: var(--danger); font-size: 0.82rem; padding: 8px 12px; font-weight: 600;">
+            Coach Verwijderen
+          </button>
+        </div>
+      </div>
+
+      <div id="modalCoachSection" style="display: none; margin-bottom: 20px;">
+        <div style="background: rgba(255, 159, 10, 0.1); padding: 12px; border-radius: 12px; border: 1px solid var(--gold-accent); text-align: center; margin-bottom: 12px;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block; font-weight: 600;">JOUW UNIEKE COACH-ID:</span>
+          <strong id="modalCoachIdDisplay" style="font-size: 1.25rem; color: var(--gold-accent); letter-spacing: 1px;">-</strong>
+        </div>
+        <label class="field-label" style="font-weight: 700; color: var(--text-main);">Gekoppelde Sporters:</label>
+        <div id="modalCoachClientsList" style="max-height: 120px; overflow-y: auto;"></div>
+      </div>
+
+      <h4 style="font-size: 1rem; color: var(--text-main); font-weight: 700; margin-bottom: 16px;">Gegevens Wijzigen</h4>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="floating-group">
+          <input type="text" id="profFirstName" placeholder=" ">
+          <label for="profFirstName">Voornaam</label>
+        </div>
+
+        <div class="floating-group">
+          <input type="text" id="profLastName" placeholder=" ">
+          <label for="profLastName">Achternaam</label>
+        </div>
+
+        <div class="floating-group">
+          <input type="date" id="profDob">
+          <label for="profDob" class="static-label">Geboortedatum</label>
+        </div>
+
+        <div class="floating-group">
+          <input type="email" id="profEmail" placeholder=" ">
+          <label for="profEmail">E-mailadres</label>
+        </div>
+
+        <div class="floating-group">
+          <input type="password" id="profPassword" placeholder=" ">
+          <label for="profPassword">Nieuw wachtwoord (optioneel)</label>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 22px;">
+        <button type="button" id="saveProfileBtn" class="btn-primary full-width btn-pill">Opslaan</button>
+        <button type="button" id="resetMockDataBtn" class="outline full-width btn-pill" style="border-color: var(--danger); color: var(--danger);">Herstel Testdata (Demo)</button>
+        <button type="button" id="logoutBtn" class="secondary full-width btn-pill" style="color: var(--danger); text-align: center;">Uitloggen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editHistoryModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 id="editHistoryTitle" style="margin: 0; color: var(--text-main);">Workout Bewerken</h3>
+        <button type="button" id="closeEditHistoryModalBtn" class="btn-action-icon secondary"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <input type="hidden" id="editHistoryId">
+      <p id="editHistoryDateDisplay" style="color: var(--gold-accent); font-weight: 700; font-size: 0.85rem; margin: 0 0 12px 0;"></p>
+      <div id="editHistoryExercisesContainer" style="max-height: 300px; overflow-y: auto;"></div>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button type="button" id="saveHistoryEditsBtn" class="btn-primary flex-1">Opslaan</button>
+        <button type="button" id="cancelHistoryEditsBtn" class="secondary">Annuleren</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM POP-UP -->
+  <div id="customConfirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 340px; text-align: center;">
+      <h3 id="confirmModalTitle" style="margin: 0 0 8px 0; color: var(--text-main); font-size: 1.15rem; font-weight: 700;">Weet je het zeker?</h3>
+      <p id="confirmModalText" style="color: var(--text-muted); font-size: 0.88rem; margin: 0 0 20px 0; line-height: 1.4;">Dit kan niet ongedaan worden gemaakt.</p>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" id="confirmModalCancelBtn" class="secondary flex-1 btn-pill" style="padding: 10px 14px !important; font-size: 0.9rem !important;">Annuleren</button>
+        <button type="button" id="confirmModalOkBtn" class="danger flex-1 btn-pill" style="padding: 10px 14px !important; font-size: 0.9rem !important;">Verder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POP-UP WANNEER WORKOUT NOG NIET IS AFGEVINKT -->
+  <div id="workoutNotFinishedModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 340px; text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 159, 10, 0.15); color: var(--gold-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 1.25rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 1.15rem; font-weight: 700;">Workout Niet Voltooid</h3>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0 0 20px 0; line-height: 1.45;">
+        Je hebt nog niet alle sets afgevinkt. Vink de resterende sets af met het vinkje (✓) of verwijder de oefeningen/sets die je niet hebt gedaan.
+      </p>
+      <button type="button" id="closeWorkoutNotFinishedBtn" class="btn-primary full-width btn-pill" style="padding: 10px 14px !important; font-size: 0.9rem !important;">Begrepen</button>
+    </div>
+  </div>
+
+  <!-- POP-UP BIJ GEFELICITEERD / PERSOONLIJK EN ZONDER FEESTMUTSERIJ -->
+  <div id="workoutSuccessModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 340px; text-align: center;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 159, 10, 0.18); color: var(--gold-accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; font-size: 1.4rem;">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      
+      <h3 id="workoutSuccessUserTitle" style="margin: 0 0 6px 0; color: var(--text-main); font-size: 1.2rem; font-weight: 700;">Sterk werk!</h3>
+      
+      <p id="workoutSuccessMessageText" style="color: var(--text-muted); font-size: 0.88rem; margin: 0 0 22px 0; line-height: 1.45;">
+        Je hebt je workout afgerond. Weer een stap dichter bij je doel!
+      </p>
+      
+      <button type="button" id="closeWorkoutSuccessBtn" class="btn-primary full-width btn-pill" style="padding: 12px 14px !important; font-size: 0.9rem !important;">Sluiten</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

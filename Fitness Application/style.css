@@ -1,0 +1,817 @@
+/* ==========================================================================
+   AQM FITNESS APP - GYM MODE DESIGN SYSTEM (STEAMED GLASS & ATHLETIC)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
+
+:root {
+  --bg-dark: #0A0E17;
+  --bg-card: #121927;
+  --bg-input: #1A2234;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --gold-accent: #FF9F0A;
+  --gold-hover: #E08800;
+  --text-main: #FFFFFF;
+  --text-muted: #8E8E93;
+  --danger: #FF453A;
+  --radius: 14px;
+  --pill-radius: 28px;
+  --transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* --------------------------------------------------------------------------
+   1) CENTRAAL WATERMERK - AANGEDAMPT MAT GLAS EFFECT
+   -------------------------------------------------------------------------- */
+.bg-watermark-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  overflow: hidden;
+  background: 
+    radial-gradient(circle at 50% 50%, rgba(18, 25, 39, 0.75) 0%, var(--bg-dark) 100%),
+    radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 4px 4px;
+}
+
+.watermark-img {
+  width: 85vw;
+  max-width: 380px;
+  height: auto;
+  opacity: 0.18;
+  filter: 
+    blur(6px) 
+    contrast(130%)
+    drop-shadow(0 0 35px rgba(255, 159, 10, 0.35));
+  transform: scale(1.08);
+}
+
+/* --------------------------------------------------------------------------
+   2) HEADER & PROFILE PILL
+   -------------------------------------------------------------------------- */
+.app-header {
+  position: relative !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: #0A0E17 !important;
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 999 !important;
+  flex-shrink: 0;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-logo {
+  height: 34px;
+  width: auto;
+}
+
+.header-user-pill {
+  position: relative !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--pill-radius);
+  padding: 4px 6px 4px 14px;
+  transition: var(--transition);
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  z-index: 1000 !important;
+}
+
+.header-user-pill:hover {
+  border-color: var(--gold-accent);
+}
+
+.user-pill-name {
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.user-pill-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold-accent);
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+/* --------------------------------------------------------------------------
+   3) ACTIEVE WORKOUT BANNER
+   -------------------------------------------------------------------------- */
+#activeWorkoutCard {
+  margin: 0 -16px 0 -16px !important;
+  width: calc(100% + 32px) !important;
+  position: relative;
+}
+
+.active-workout-header {
+  position: sticky;
+  top: 0;
+  z-index: 500;
+  background: #0A0E17 !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.8);
+}
+
+#activeExercisesContainer {
+  padding: 16px 16px 0 16px;
+}
+
+.active-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--gold-accent);
+  letter-spacing: 0.8px;
+}
+
+.timer-display-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  padding: 6px 10px 6px 12px;
+  border-radius: var(--pill-radius);
+  color: var(--gold-accent);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.btn-timer-pause {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.btn-timer-pause:hover {
+  color: var(--gold-accent);
+}
+
+.active-workout-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px 18px 16px;
+}
+
+.btn-finish-disabled {
+  background: rgba(255, 159, 10, 0.25) !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  cursor: pointer !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   4) FLOATING LABELS & INVOERVELDEN
+   -------------------------------------------------------------------------- */
+.floating-group {
+  position: relative;
+  width: 100%;
+}
+
+.floating-group input,
+.floating-group textarea,
+.floating-group select,
+.auth-select {
+  width: 100%;
+  padding: 18px 18px 8px 18px;
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--pill-radius);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(100%) saturate(1000%) hue-rotate(5deg);
+  cursor: pointer;
+}
+
+.floating-group input:focus,
+.floating-group textarea:focus,
+.floating-group select:focus,
+.auth-select:focus {
+  border-color: var(--gold-accent);
+}
+
+.floating-group label {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  pointer-events: none;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), font-size 0.2s ease, color 0.2s ease;
+}
+
+.floating-group input:focus ~ label,
+.floating-group input:not(:placeholder-shown) ~ label,
+.floating-group textarea:focus ~ label,
+.floating-group textarea:not(:placeholder-shown) ~ label {
+  transform: translateY(-20px);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gold-accent);
+}
+
+/* --------------------------------------------------------------------------
+   5) BADGES & TAGS STYLING
+   -------------------------------------------------------------------------- */
+.exercise-badges-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 16px;
+}
+
+.exercise-badge {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   6) UNIVERSELE SMOOTH UITSCHUIFTOGGLE VOOR ALLE CARDS (SCHEMA & HISTORIE)
+   -------------------------------------------------------------------------- */
+.card-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-action-bar .btn-start-workout {
+  flex: 1;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.sliding-actions-drawer {
+  display: flex;
+  gap: 8px;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-width 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.25s ease;
+  white-space: nowrap;
+}
+
+.sliding-actions-drawer.open {
+  max-width: 140px;
+  opacity: 1;
+}
+
+.btn-actions-toggle {
+  transition: var(--transition);
+}
+
+.btn-actions-toggle i {
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1), color 0.25s ease;
+}
+
+/* UNIVERSELE DYNAMISCHE ROTATIE EN KIKKER-ORANJE KLEUR BIJ ACTIEVE TOGGLE */
+.btn-actions-toggle.active {
+  border-color: var(--gold-accent) !important;
+  color: var(--gold-accent) !important;
+}
+
+.btn-actions-toggle.active i {
+  transform: rotate(90deg);
+  color: var(--gold-accent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7) TEMPLATE CREATOR
+   -------------------------------------------------------------------------- */
+#newTemplateCard {
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-accent) transparent;
+}
+
+/* --------------------------------------------------------------------------
+   8) ROLKEUZE RADIOBUTTONS
+   -------------------------------------------------------------------------- */
+.role-selection-wrapper {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-top: 4px;
+}
+
+.role-radio-grid {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.role-radio-card {
+  flex: 1;
+  cursor: pointer;
+}
+
+.role-radio-card input {
+  display: none;
+}
+
+.role-radio-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--pill-radius);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.custom-radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  transition: var(--transition);
+}
+
+.role-radio-card input:checked + .role-radio-btn {
+  border-color: var(--gold-accent);
+  color: var(--text-main);
+  background: rgba(255, 159, 10, 0.08);
+}
+
+.role-radio-card input:checked + .role-radio-btn .custom-radio-dot {
+  border-color: var(--gold-accent);
+  background: var(--gold-accent);
+  box-shadow: inset 0 0 0 3px var(--bg-input);
+}
+
+/* --------------------------------------------------------------------------
+   9) AUTHENTICATIE & LOGO'S
+   -------------------------------------------------------------------------- */
+.auth-wrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.auth-logo-box {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-logo {
+  max-width: 140px !important;
+  max-height: 80px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+}
+
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.auth-tagline {
+  color: var(--gold-accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.social-login-grid {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.social-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.social-btn:hover {
+  border-color: var(--gold-accent);
+  color: var(--gold-accent);
+  transform: translateY(-2px);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0 14px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.auth-divider span {
+  padding: 0 10px;
+}
+
+.auth-footer {
+  margin-top: 14px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.auth-link {
+  color: var(--gold-accent) !important;
+  font-weight: 700;
+  text-decoration: none !important;
+  margin-left: 4px;
+  transition: opacity 0.2s ease;
+}
+
+.auth-link:hover {
+  opacity: 0.8;
+}
+
+/* --------------------------------------------------------------------------
+   10) GYM MODE BOTTOM NAVIGATION
+   -------------------------------------------------------------------------- */
+.bottom-nav,
+.bottom-nav.liquid-glass {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  height: 64px;
+  background: #0F1522 !important;
+  border-top: 1px solid var(--glass-border) !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  padding: 0 8px !important;
+  z-index: 1000;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.nav-indicator,
+.nav-pill-indicator {
+  display: none !important;
+}
+
+.bottom-nav-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 0px !important;
+  width: 100% !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
+  font-size: 0.72rem !important;
+  font-weight: 500;
+  height: 100%;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  transition: color 0.15s ease !important;
+  cursor: pointer;
+}
+
+.bottom-nav-btn i {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.bottom-nav-btn span {
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+
+.bottom-nav-btn.active {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.bottom-nav-btn.active i,
+.bottom-nav-btn.active span {
+  color: var(--gold-accent) !important;
+  font-weight: 700;
+}
+
+.bottom-nav-btn.active i {
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   11) CARDS & MAIN LAYOUT ZONDER GAP
+   -------------------------------------------------------------------------- */
+#appSection {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1;
+}
+
+main {
+  flex: 1;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding: 0 16px 85px 16px;
+  z-index: 1;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-accent) transparent;
+}
+
+.client-tab-content {
+  padding-top: 16px;
+}
+
+.card-glass,
+.card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius) !important;
+  padding: 18px !important;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+#clientView .fab-btn,
+#floatingAddTemplateBtn {
+  display: none !important;
+}
+
+.fab-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold-accent);
+  color: #000;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.fab-btn:active {
+  transform: scale(0.94);
+  background: var(--gold-hover);
+}
+
+/* --------------------------------------------------------------------------
+   12) UNIVERSELE EMPTY STATE
+   -------------------------------------------------------------------------- */
+.empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 20px !important;
+  margin-top: 10px;
+}
+
+.empty-state-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 159, 10, 0.12);
+  border: 1px solid rgba(255, 159, 10, 0.25);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-accent);
+  font-size: 1.3rem;
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   13) BUTTONS & MODALS
+   -------------------------------------------------------------------------- */
+.btn-pill {
+  border-radius: var(--pill-radius) !important;
+  padding: 14px 20px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+.btn-primary {
+  background: var(--gold-accent);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: var(--gold-hover);
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  border: none;
+}
+
+.outline {
+  background: transparent;
+  border: 1px solid var(--gold-accent);
+  color: var(--gold-accent);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+}
+
+.danger {
+  background: var(--danger);
+  color: #fff;
+  border-radius: var(--radius);
+  border: none;
+}
+
+.btn-action-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.btn-delete-tmpl-subtle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(255, 69, 58, 0.4);
+  color: var(--danger);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-delete-tmpl-subtle:hover {
+  background: rgba(255, 69, 58, 0.12);
+  border-color: var(--danger);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999 !important;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  padding: 22px;
+}
