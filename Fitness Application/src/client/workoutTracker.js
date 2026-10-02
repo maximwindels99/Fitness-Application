@@ -102,7 +102,6 @@ export function stopAndResetWorkoutUI(onRenderTemplates) {
   if (exercisesContainer) exercisesContainer.innerHTML = '';
   if (templatesList) templatesList.style.display = 'block';
 
-  // 100% verse herkoppeling van alle Start Workout knoppen
   renderTemplates((tmplId) => {
     startWorkoutFromTemplate(tmplId, () => stopAndResetWorkoutUI(onRenderTemplates));
   });
@@ -213,13 +212,11 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
 
   updateTimerUI();
 
-  // Zorg dat de hele pilvormige timer-badge reageert op een klik
   const timerBox = document.querySelector('.timer-display-box');
   if (timerBox) {
     timerBox.style.cursor = 'pointer';
     timerBox.onclick = togglePauseWorkoutTimer;
 
-    // Voorkom dat sub-elementen de klik opvangen
     Array.from(timerBox.children).forEach(child => {
       child.style.pointerEvents = 'none';
     });
@@ -254,6 +251,7 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
   template.exercises.forEach(ex => {
     const exObj = findExerciseById(ex.exerciseId);
     const exName = exObj ? exObj.name : ex.exerciseId;
+    const catStr = exObj ? (Array.isArray(exObj.category) ? exObj.category.join(', ') : exObj.category) : '';
     const lastSets = getLastPerformance(ex.exerciseId);
 
     const exDiv = document.createElement('div');
@@ -272,13 +270,36 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
       setsContainer.appendChild(createActiveSetRow(idx + 1, s.weight, s.reps, lastInfo, false));
     });
 
+    const videoBtnHTML = exObj && exObj.videoUrl ? `
+      <div style="margin-top: 10px;">
+        <a href="${exObj.videoUrl}" target="_blank" rel="noopener noreferrer" class="outline" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 0.78rem; text-decoration: none; border-radius: 8px;">
+          <i class="fa-solid fa-play"></i> Video
+        </a>
+      </div>
+    ` : '';
+
     exDiv.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <h4 style="margin:0; color:var(--white); font-size: 1.05rem; font-weight:700;">${exName}</h4>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h4 style="margin:0; color:var(--white); font-size: 1.05rem; font-weight:700;">${exName}</h4>
+          ${exObj ? `
+            <button type="button" class="btn-ex-info" style="background: transparent; border: 1px solid var(--glass-border); color: var(--gold-accent); font-size: 0.75rem; padding: 3px 10px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <i class="fa-solid fa-circle-info"></i> Info
+            </button>
+          ` : ''}
+        </div>
         
         <button type="button" class="btn-remove-active-ex" title="Oefening verwijderen" style="background: transparent; border: 1px solid rgba(255, 69, 58, 0.4); color: var(--danger); font-size: 0.75rem; font-weight: 600; padding: 3px 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition);">
           <i class="fa-solid fa-minus"></i>
         </button>
+      </div>
+
+      <div class="active-ex-info-box" style="display: none; background: rgba(255, 159, 10, 0.06); border: 1px solid rgba(255, 159, 10, 0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
+        <div style="margin-bottom: 6px;">
+          <span class="exercise-badge" style="font-size: 0.72rem; padding: 3px 8px; background: rgba(255, 159, 10, 0.12); border: 1px solid rgba(255, 159, 10, 0.3); color: var(--gold-accent); font-weight: 600; border-radius: 6px; display: inline-block;">${catStr}</span>
+        </div>
+        <div>${exObj ? (exObj.instructions || 'Geen specifieke instructies beschikbaar voor deze oefening.') : ''}</div>
+        ${videoBtnHTML}
       </div>
       
       <div class="active-set-header" style="display: grid; grid-template-columns: 28px 1fr 1fr 1fr 34px 34px; gap: 6px; align-items: center; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-align: center;">
@@ -290,6 +311,17 @@ export function startWorkoutFromTemplate(templateId, onRenderTemplates) {
         <span></span>
       </div>
     `;
+
+    const infoBtn = exDiv.querySelector('.btn-ex-info');
+    const infoBox = exDiv.querySelector('.active-ex-info-box');
+
+    if (infoBtn && infoBox) {
+      infoBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = infoBox.style.display === 'none';
+        infoBox.style.display = isHidden ? 'block' : 'none';
+      });
+    }
 
     exDiv.querySelector('.btn-remove-active-ex').onclick = (e) => {
       e.stopPropagation();

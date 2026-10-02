@@ -161,13 +161,13 @@ export function updateCoachProgressChart() {
       <h3 style="margin-bottom: 6px; color: var(--white); font-weight: 800; font-size: 1.15rem;">Progressie Per Oefening</h3>
       <label style="font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 10px;">Selecteer een oefening:</label>
 
-      <!-- CUSTOM PILVORMMIGE DROPDOWN -->
+      <!-- CUSTOM PILVORMIGE DROPDOWN (Enkel oefeningnaam bij selectie) -->
       <div class="coach-ex-dropdown-wrapper" style="position: relative; width: 100%; margin-bottom: 16px;">
         <div id="coachExDropdownTrigger" class="inline-client-select" style="width: 100%; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg-input); padding: 12px 16px; border-radius: var(--pill-radius); border: 1px solid var(--glass-border);">
-          <span id="coachExDropdownLabel" style="font-size: 0.9rem; font-weight: 600; color: var(--white);">${currentEx ? `${currentEx.name} (${Array.isArray(currentEx.category) ? currentEx.category.join(', ') : currentEx.category})` : '-- Kies Oefening --'}</span>
+          <span id="coachExDropdownLabel" style="font-size: 0.9rem; font-weight: 600; color: var(--white);">${currentEx ? currentEx.name : '-- Kies Oefening --'}</span>
           <i class="fa-solid fa-chevron-down" style="font-size: 0.82rem; color: var(--text-muted);"></i>
         </div>
-        <div id="coachExDropdownMenu" class="custom-dropdown-menu" style="display: none; width: 100%; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 6px;"></div>
+        <div id="coachExDropdownMenu" class="custom-dropdown-menu" style="display: none; width: 100%; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 6px; padding: 8px; background: #121927; border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); max-height: 220px; overflow-y: auto;"></div>
       </div>
 
       <!-- MAX GEWICHT & 1RM MAX SELEKTIEKAARTEN -->
@@ -241,10 +241,27 @@ export function updateCoachProgressChart() {
   const menu = document.getElementById('coachExDropdownMenu');
 
   availableExercises.forEach(ex => {
-    const item = document.createElement('div');
-    item.className = `custom-dropdown-item ${ex.id === state.selectedCoachExerciseId ? 'active' : ''}`;
     const catStr = Array.isArray(ex.category) ? ex.category.join(', ') : ex.category;
-    item.innerText = `${ex.name} (${catStr})`;
+    const isSelected = ex.id === state.selectedCoachExerciseId;
+
+    const item = document.createElement('div');
+    item.style.cssText = `
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      background: ${isSelected ? 'rgba(255, 159, 10, 0.15)' : 'transparent'};
+      border: 1px solid ${isSelected ? 'rgba(255, 159, 10, 0.3)' : 'transparent'};
+      color: ${isSelected ? 'var(--gold-accent)' : 'var(--text-main)'};
+      transition: all 0.2s ease;
+      margin-bottom: 2px;
+    `;
+    item.innerHTML = `
+      <span style="font-size: 0.88rem; font-weight: 600; color: ${isSelected ? 'var(--gold-accent)' : '#fff'}; flex: 1;">${ex.name}</span>
+      <span class="exercise-badge" style="font-size: 0.72rem; padding: 4px 8px; margin: 0; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-muted); font-weight: 500; white-space: nowrap;">${catStr}</span>
+    `;
+
+    item.onmouseover = () => { if (ex.id !== state.selectedCoachExerciseId) item.style.background = 'rgba(255, 255, 255, 0.05)'; };
+    item.onmouseout = () => { if (ex.id !== state.selectedCoachExerciseId) item.style.background = 'transparent'; };
+
     item.onclick = (e) => {
       e.stopPropagation();
       state.selectedCoachExerciseId = ex.id;
@@ -395,7 +412,7 @@ function renderCoachChartData(clientHistory) {
     document.getElementById('coachStatAvg').innerText = `${avgVal} kg`;
   }
 
-  // Chart Rendering (ENKEL GEHELE GETALLEN OP DE Y-AS EN GEEN DUBBELE LABELS)
+  // Chart Rendering
   const ctx = canvas.getContext('2d');
   if (coachChartInstance) coachChartInstance.destroy();
 

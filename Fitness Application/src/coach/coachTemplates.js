@@ -89,7 +89,6 @@ export function renderCoachClientTemplates() {
       </div>
     `;
 
-    // TOGGLE MET SMOOTH ANIMATIE VOOR HET UITSCHUIVEN VAN DE OPTIES
     const toggleBtn = card.querySelector('.btn-actions-toggle');
     const drawer = card.querySelector('.sliding-actions-drawer');
 
@@ -141,7 +140,6 @@ export function renderCoachClientTemplates() {
     container.appendChild(card);
   });
 
-  // Klik buiten de lade sluit geopende opties automatisch
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.card-action-bar')) {
       document.querySelectorAll('.sliding-actions-drawer.open').forEach(d => d.classList.remove('open'));
@@ -253,8 +251,8 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
     <div class="client-select-wrapper-inline" style="position: relative; width: 100%; margin-bottom: 12px;">
       <input type="hidden" class="tmpl-ex-hidden-input" value="${selectedEx ? selectedEx.id : ''}">
       <div class="inline-client-select tmpl-ex-trigger" style="width: 100%; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg-input); padding: 12px 14px; border-radius: var(--pill-radius); border: 1px solid var(--glass-border);">
-        <span class="tmpl-ex-trigger-label" style="font-size: 0.88rem; font-weight: 500; ${!selectedEx ? 'color: var(--text-muted);' : ''}">
-          ${selectedEx ? `${selectedEx.name} (${selectedEx.category})` : '-- Kies Oefening --'}
+        <span class="tmpl-ex-trigger-label" style="font-size: 0.88rem; font-weight: 600; ${!selectedEx ? 'color: var(--text-muted);' : 'color: #fff;'}">
+          ${selectedEx ? selectedEx.name : '-- Kies Oefening --'}
         </span>
         <i class="fa-solid fa-chevron-down select-chevron-icon" style="font-size: 0.8rem; color: var(--text-muted);"></i>
       </div>
@@ -267,9 +265,10 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
       </div>
     </div>
 
+    <!-- INFO BOX MET CATEGORIE-BADGE BOVENAAN EN VIDEOKNOP ONDERAAN -->
     <div class="tmpl-ex-info-box" style="display: none; background: rgba(255, 159, 10, 0.06); border: 1px solid rgba(255, 159, 10, 0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
-      <strong class="info-ex-title" style="color: var(--gold-accent); display: block; margin-bottom: 4px;">-</strong>
-      <span class="info-ex-text">-</span>
+      <div class="info-ex-title" style="margin-bottom: 6px;"></div>
+      <div class="info-ex-text"></div>
     </div>
 
     <div class="tmpl-sets-header" style="display: grid; grid-template-columns: 32px 1fr 1fr 32px; gap: 8px; align-items: center; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-align: center;">
@@ -308,8 +307,19 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
     if (isHidden) {
       const currentEx = findExerciseById(hiddenInput.value);
       if (currentEx) {
-        infoTitle.innerText = `${currentEx.name} (${currentEx.category})`;
-        infoText.innerText = currentEx.instructions || 'Geen specifieke instructies beschikbaar voor deze oefening.';
+        const catStr = Array.isArray(currentEx.category) ? currentEx.category.join(', ') : currentEx.category;
+        
+        infoTitle.innerHTML = `<span class="exercise-badge" style="font-size: 0.72rem; padding: 3px 8px; background: rgba(255, 159, 10, 0.12); border: 1px solid rgba(255, 159, 10, 0.3); color: var(--gold-accent); font-weight: 600; border-radius: 6px; display: inline-block;">${catStr}</span>`;
+        
+        const videoBtnHTML = currentEx.videoUrl ? `
+          <div style="margin-top: 10px;">
+            <a href="${currentEx.videoUrl}" target="_blank" rel="noopener noreferrer" class="outline" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 0.78rem; text-decoration: none; border-radius: 8px;">
+              <i class="fa-solid fa-play"></i> Video
+            </a>
+          </div>
+        ` : '';
+
+        infoText.innerHTML = `<div>${currentEx.instructions || 'Geen specifieke instructies beschikbaar voor deze oefening.'}</div>${videoBtnHTML}`;
         infoBox.style.display = 'block';
       }
     } else {
@@ -324,10 +334,10 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
       .map(input => input.value)
       .filter(val => val !== "");
 
-    const filtered = sortedDatabase.filter(ex => 
-      ex.name.toLowerCase().includes(filterText.toLowerCase()) || 
-      ex.category.toLowerCase().includes(filterText.toLowerCase())
-    );
+    const filtered = sortedDatabase.filter(ex => {
+      const catStr = Array.isArray(ex.category) ? ex.category.join(' ').toLowerCase() : (ex.category || '').toLowerCase();
+      return ex.name.toLowerCase().includes(filterText.toLowerCase()) || catStr.includes(filterText.toLowerCase());
+    });
 
     if (filtered.length === 0) {
       itemsContainer.innerHTML = '<div style="padding: 10px; color: var(--text-muted); font-size: 0.82rem; text-align: center;">Geen oefening gevonden</div>';
@@ -336,16 +346,17 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
 
     filtered.forEach(ex => {
       const isAlreadyUsed = usedExIds.includes(ex.id) && ex.id !== hiddenInput.value;
+      const catStr = Array.isArray(ex.category) ? ex.category.join(', ') : ex.category;
 
       const item = document.createElement('div');
       item.style.cssText = `padding: 8px 10px; color: #fff; font-size: 0.85rem; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; ${
         ex.id === hiddenInput.value ? 'background: rgba(255, 159, 10, 0.18); color: var(--gold-accent);' : ''
       } ${isAlreadyUsed ? 'opacity: 0.5;' : ''}`;
 
-      const badgeText = isAlreadyUsed ? 'Al in schema' : ex.category;
+      const badgeText = isAlreadyUsed ? 'Al in schema' : catStr;
       const badgeStyle = isAlreadyUsed 
         ? 'font-size: 0.7rem; padding: 2px 6px; background: rgba(255,255,255,0.1); color: var(--text-muted);' 
-        : 'font-size: 0.7rem; padding: 2px 6px;';
+        : 'font-size: 0.7rem; padding: 2px 6px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-muted); font-weight: 500;';
 
       item.innerHTML = `
         <span>${ex.name}</span>
@@ -355,7 +366,7 @@ export function addExerciseToCoachTemplate(selectedExId = "", setsData = null) {
       item.onclick = (e) => {
         e.stopPropagation();
         hiddenInput.value = ex.id;
-        label.innerText = `${ex.name} (${ex.category})`;
+        label.innerText = ex.name;
         label.style.color = '#ffffff';
         list.style.display = 'none';
         infoBox.style.display = 'none';

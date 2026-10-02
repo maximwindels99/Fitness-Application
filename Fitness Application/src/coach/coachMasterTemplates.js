@@ -121,9 +121,19 @@ export function renderCoachMasterTemplatesList() {
     card.className = 'card card-glass';
     card.style.cssText = 'border-left: 4px solid var(--gold-accent) !important; margin-bottom: 12px; position: relative; overflow: visible !important;';
 
-    const exercisesSummary = t.exercises.map(e => {
+    // Maximaal 3 badges tonen; overige verbergen achter een +X toggle knop
+    const initialExercises = t.exercises.slice(0, 3);
+    const hiddenExercises = t.exercises.slice(3);
+    const extraCount = hiddenExercises.length;
+
+    let initialBadgesHTML = initialExercises.map(e => {
       const exObj = findExerciseById(e.exerciseId);
       return `<span class="exercise-badge">${exObj ? exObj.name : e.exerciseId}</span>`;
+    }).join('');
+
+    let hiddenBadgesHTML = hiddenExercises.map(e => {
+      const exObj = findExerciseById(e.exerciseId);
+      return `<span class="exercise-badge extra-badge-item" style="display: none;">${exObj ? exObj.name : e.exerciseId}</span>`;
     }).join('');
 
     let creatorSubtitle = '';
@@ -144,7 +154,9 @@ export function renderCoachMasterTemplatesList() {
       ${creatorSubtitle}
 
       <div class="exercise-badges-container" style="display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 16px;">
-        ${exercisesSummary}
+        ${initialBadgesHTML}
+        ${hiddenBadgesHTML}
+        ${extraCount > 0 ? `<button type="button" class="exercise-badge btn-toggle-more" style="background: var(--bg-input); color: var(--gold-accent); border-color: var(--gold-accent); cursor: pointer;">+${extraCount}</button>` : ''}
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
@@ -202,6 +214,23 @@ export function renderCoachMasterTemplatesList() {
         }
       }
     });
+
+    if (extraCount > 0) {
+      const toggleMoreBtn = card.querySelector('.btn-toggle-more');
+      const extraItems = card.querySelectorAll('.extra-badge-item');
+      let isOpenMore = false;
+
+      toggleMoreBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isOpenMore = !isOpenMore;
+        
+        extraItems.forEach(el => {
+          el.style.display = isOpenMore ? 'inline-flex' : 'none';
+        });
+
+        toggleMoreBtn.innerText = isOpenMore ? '-' : `+${extraCount}`;
+      });
+    }
 
     card.querySelector('.btn-assign-master').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -289,10 +318,6 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
   const sortedDatabase = getFullExerciseDatabase().sort((a, b) => a.name.localeCompare(b.name));
   const selectedEx = sortedDatabase.find(ex => ex.id === selectedExId) || null;
 
-  const categoryDisplay = selectedEx 
-    ? (Array.isArray(selectedEx.category) ? selectedEx.category.join(', ') : selectedEx.category)
-    : '';
-
   exerciseDiv.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
       <label class="master-ex-num-label" style="margin:0; font-size: 0.78rem; font-weight: 700; color: var(--gold-accent); text-transform: uppercase;">OEFENING:</label>
@@ -311,8 +336,8 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
     <div class="client-select-wrapper-inline" style="position: relative; width: 100%; margin-bottom: 12px;">
       <input type="hidden" class="tmpl-ex-hidden-input" value="${selectedEx ? selectedEx.id : ''}">
       <div class="inline-client-select tmpl-ex-trigger" style="width: 100%; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg-input); padding: 12px 14px; border-radius: var(--pill-radius); border: 1px solid var(--glass-border);">
-        <span class="tmpl-ex-trigger-label" style="font-size: 0.88rem; font-weight: 500; ${!selectedEx ? 'color: var(--text-muted);' : ''}">
-          ${selectedEx ? `${selectedEx.name} (${categoryDisplay})` : '-- Kies Oefening --'}
+        <span class="tmpl-ex-trigger-label" style="font-size: 0.88rem; font-weight: 600; ${!selectedEx ? 'color: var(--text-muted);' : 'color: #fff;'}">
+          ${selectedEx ? selectedEx.name : '-- Kies Oefening --'}
         </span>
         <i class="fa-solid fa-chevron-down select-chevron-icon" style="font-size: 0.8rem; color: var(--text-muted);"></i>
       </div>
@@ -325,9 +350,10 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
       </div>
     </div>
 
+    <!-- INFO BOX MET CATEGORIE-BADGE BOVENAAN EN VIDEOKNOP ONDERAAN -->
     <div class="tmpl-ex-info-box" style="display: none; background: rgba(255, 159, 10, 0.06); border: 1px solid rgba(255, 159, 10, 0.2); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">
-      <strong class="info-ex-title" style="color: var(--gold-accent); display: block; margin-bottom: 4px;">-</strong>
-      <span class="info-ex-text">-</span>
+      <div class="info-ex-title" style="margin-bottom: 6px;"></div>
+      <div class="info-ex-text"></div>
     </div>
 
     <div class="tmpl-sets-header" style="display: grid; grid-template-columns: 32px 1fr 1fr 32px; gap: 8px; align-items: center; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-align: center;">
@@ -367,8 +393,18 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
       const currentEx = findExerciseById(hiddenInput.value);
       if (currentEx) {
         const catStr = Array.isArray(currentEx.category) ? currentEx.category.join(', ') : currentEx.category;
-        infoTitle.innerText = `${currentEx.name} (${catStr})`;
-        infoText.innerText = currentEx.instructions || 'Geen specifieke instructies beschikbaar voor deze oefening.';
+        
+        infoTitle.innerHTML = `<span class="exercise-badge" style="font-size: 0.72rem; padding: 3px 8px; background: rgba(255, 159, 10, 0.12); border: 1px solid rgba(255, 159, 10, 0.3); color: var(--gold-accent); font-weight: 600; border-radius: 6px; display: inline-block;">${catStr}</span>`;
+        
+        const videoBtnHTML = currentEx.videoUrl ? `
+          <div style="margin-top: 10px;">
+            <a href="${currentEx.videoUrl}" target="_blank" rel="noopener noreferrer" class="outline" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 0.78rem; text-decoration: none; border-radius: 8px;">
+              <i class="fa-solid fa-play"></i> Video
+            </a>
+          </div>
+        ` : '';
+
+        infoText.innerHTML = `<div>${currentEx.instructions || 'Geen specifieke instructies beschikbaar voor deze oefening.'}</div>${videoBtnHTML}`;
         infoBox.style.display = 'block';
       }
     } else {
@@ -384,10 +420,8 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
       .filter(val => val !== "");
 
     const filtered = sortedDatabase.filter(ex => {
-      const nameMatch = ex.name.toLowerCase().includes(filterText.toLowerCase());
       const catStr = Array.isArray(ex.category) ? ex.category.join(' ').toLowerCase() : (ex.category || '').toLowerCase();
-      const catMatch = catStr.includes(filterText.toLowerCase());
-      return nameMatch || catMatch;
+      return ex.name.toLowerCase().includes(filterText.toLowerCase()) || catStr.includes(filterText.toLowerCase());
     });
 
     if (filtered.length === 0) {
@@ -407,7 +441,7 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
       const badgeText = isAlreadyUsed ? 'Al in schema' : catStr;
       const badgeStyle = isAlreadyUsed 
         ? 'font-size: 0.7rem; padding: 2px 6px; background: rgba(255,255,255,0.1); color: var(--text-muted);' 
-        : 'font-size: 0.7rem; padding: 2px 6px;';
+        : 'font-size: 0.7rem; padding: 2px 6px; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-muted); font-weight: 500;';
 
       item.innerHTML = `
         <span>${ex.name}</span>
@@ -417,7 +451,7 @@ export function addExerciseToMasterTemplate(selectedExId = "", setsData = null) 
       item.onclick = (e) => {
         e.stopPropagation();
         hiddenInput.value = ex.id;
-        label.innerText = `${ex.name} (${catStr})`;
+        label.innerText = ex.name;
         label.style.color = '#ffffff';
         list.style.display = 'none';
         infoBox.style.display = 'none';
@@ -682,7 +716,6 @@ function openAssignMasterModal(template) {
     `;
   }
 
-  // Multi-select event listeners binden
   setTimeout(() => {
     const items = document.querySelectorAll('.assign-client-item');
 
@@ -694,14 +727,12 @@ function openAssignMasterModal(template) {
         const nameSpan = item.querySelector('.item-name');
 
         if (selectedEmails.includes(email)) {
-          // Deselecteren
           selectedEmails = selectedEmails.filter(e => e !== email);
           item.style.background = 'var(--bg-input)';
           item.style.borderColor = 'var(--glass-border)';
           if (nameSpan) nameSpan.style.color = '#ffffff';
           if (checkIcon) checkIcon.style.display = 'none';
         } else {
-          // Selecteren
           selectedEmails.push(email);
           item.style.background = 'rgba(255, 159, 10, 0.15)';
           item.style.borderColor = 'var(--gold-accent)';

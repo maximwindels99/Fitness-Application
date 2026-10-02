@@ -72,7 +72,6 @@ export function updateProgressChart() {
   }
 
   const selectedEx = availableExercises.find(e => e.id === state.selectedProgressExerciseId) || availableExercises[0];
-  const selectedCatStr = selectedEx ? (Array.isArray(selectedEx.category) ? selectedEx.category.join(', ') : selectedEx.category) : '';
 
   if (!document.getElementById('progressChart')) {
     const currentTimeline = state.clientTimelineFilter || '10';
@@ -80,11 +79,11 @@ export function updateProgressChart() {
     card.innerHTML = `
       <h3 style="margin-top: 0; color: #fff; font-size: 1.1rem; font-weight: 700;">Progressie Per Oefening</h3>
       
-      <!-- Custom AQM Searchable Dropdown (Stijlvol Pilvormig) -->
+      <!-- Custom AQM Searchable Dropdown (Stijlvol Pilvormig - Enkel Oefeningnaam bij selectie) -->
       <label style="display: block; margin: 10px 0 6px 0; font-size: 0.82rem; color: var(--text-muted);">Selecteer een oefening:</label>
       <div class="custom-dropdown-wrapper" style="position: relative; margin-bottom: 16px;">
         <button id="progressDropdownTrigger" type="button" style="display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; cursor: pointer; padding: 12px 16px !important; background: var(--bg-input); border: 1px solid var(--glass-border); border-radius: var(--pill-radius); color: #fff; height: auto;" onclick="toggleProgressDropdown(event)">
-          <span id="progressDropdownSelectedText" style="line-height: 1.2; font-weight: 600; font-size: 0.9rem; color: var(--white);">${selectedEx ? `${selectedEx.name} (${selectedCatStr})` : 'Selecteer Oefening'}</span>
+          <span id="progressDropdownSelectedText" style="line-height: 1.2; font-weight: 600; font-size: 0.9rem; color: var(--white);">${selectedEx ? selectedEx.name : 'Selecteer Oefening'}</span>
           <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;"></i>
         </button>
         <div id="progressDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #121927; border: 1px solid var(--glass-border); border-radius: 12px; z-index: 1000; margin-top: 6px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.7);">
@@ -154,6 +153,11 @@ export function updateProgressChart() {
         </div>
       </div>
     `;
+  } else {
+    const selectedTextEl = document.getElementById('progressDropdownSelectedText');
+    if (selectedTextEl && selectedEx) {
+      selectedTextEl.innerText = selectedEx.name;
+    }
   }
 
   populateProgressExerciseList(availableExercises, userHistory);
@@ -375,17 +379,20 @@ function populateProgressExerciseList(exercises, userHistory) {
   list.innerHTML = '';
   exercises.forEach(ex => {
     const catStr = Array.isArray(ex.category) ? ex.category.join(', ') : ex.category;
+    const isSelected = ex.id === state.selectedProgressExerciseId;
+
     const item = document.createElement('div');
     item.style.cssText = `
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 10px; border-radius: 8px; cursor: pointer;
-      background: ${ex.id === state.selectedProgressExerciseId ? 'rgba(255, 159, 10, 0.15)' : 'transparent'};
-      color: ${ex.id === state.selectedProgressExerciseId ? 'var(--gold-accent)' : 'var(--text-main)'};
-      transition: background 0.2s ease;
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      background: ${isSelected ? 'rgba(255, 159, 10, 0.15)' : 'transparent'};
+      border: 1px solid ${isSelected ? 'rgba(255, 159, 10, 0.3)' : 'transparent'};
+      color: ${isSelected ? 'var(--gold-accent)' : 'var(--text-main)'};
+      transition: all 0.2s ease;
     `;
     item.innerHTML = `
-      <span style="font-size: 0.88rem; font-weight: 500;">${ex.name}</span>
-      <span class="exercise-badge" style="font-size: 0.7rem; padding: 2px 8px; margin: 0;">${catStr}</span>
+      <span style="font-size: 0.88rem; font-weight: 600; color: ${isSelected ? 'var(--gold-accent)' : '#fff'}; flex: 1;">${ex.name}</span>
+      <span class="exercise-badge" style="font-size: 0.72rem; padding: 4px 8px; margin: 0; background: rgba(255, 255, 255, 0.06); border: 1px solid var(--glass-border); border-radius: 6px; color: var(--text-muted); font-weight: 500; white-space: nowrap;">${catStr}</span>
     `;
 
     item.onmouseover = () => { if (ex.id !== state.selectedProgressExerciseId) item.style.background = 'rgba(255, 255, 255, 0.05)'; };
@@ -395,7 +402,7 @@ function populateProgressExerciseList(exercises, userHistory) {
       e.stopPropagation();
       state.selectedProgressExerciseId = ex.id;
       const text = document.getElementById('progressDropdownSelectedText');
-      if (text) text.innerText = `${ex.name} (${catStr})`;
+      if (text) text.innerText = ex.name;
       toggleProgressDropdown(null, false);
       populateProgressExerciseList(exercises, userHistory);
       renderClientChartData(userHistory);
