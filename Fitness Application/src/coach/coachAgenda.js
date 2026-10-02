@@ -22,46 +22,101 @@ function formatDateShortYY(dateStr) {
 }
 
 /**
- * Vult de sporterfilter in de coach agenda.
+ * Vult de CUSTOM sporterfilter in de coach agenda.
  */
 export function populateAgendaFilterClients() {
-  const filterSelect = document.getElementById('agendaFilterClientSelect');
-  if (!filterSelect) return;
+  const searchInput = document.getElementById('agendaFilterClientSearchInput');
+  const hiddenInput = document.getElementById('agendaFilterClientSelect');
+  const dropdownList = document.getElementById('customAgendaDropdownList');
 
-  const currentVal = filterSelect.value;
-  filterSelect.innerHTML = '<option value="">Alle Sporters</option>';
+  if (!searchInput || !hiddenInput || !dropdownList) return;
 
   const clients = getLoadedClients();
+  const filterText = searchInput.value.trim().toLowerCase();
+  const selectedEmail = hiddenInput.value;
+
+  const isAllActive = !selectedEmail;
+  let html = `<div class="custom-dropdown-item ${isAllActive ? 'active' : ''}" data-email="" style="${isAllActive ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : ''}">Alle Sporters</div>`;
+
   clients.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.email;
-    opt.textContent = c.name;
-    filterSelect.appendChild(opt);
+    if (!filterText || filterText === 'alle sporters' || c.name.toLowerCase().includes(filterText)) {
+      const isSelected = c.email === selectedEmail;
+      const activeStyle = isSelected ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : '';
+      html += `<div class="custom-dropdown-item ${isSelected ? 'active' : ''}" data-email="${c.email}" style="${activeStyle}">${c.name}</div>`;
+    }
   });
 
-  filterSelect.value = currentVal;
+  dropdownList.innerHTML = html;
+
+  dropdownList.querySelectorAll('.custom-dropdown-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const email = item.getAttribute('data-email');
+      const name = item.textContent;
+
+      hiddenInput.value = email;
+      searchInput.value = name;
+      dropdownList.style.display = 'none';
+      searchInput.style.borderColor = 'var(--glass-border)';
+
+      renderCoachSessions();
+    });
+  });
 }
 
 /**
- * Vult de sporterdropdown IN het formulier voor het inplannen van een sessie.
+ * Vult de CUSTOM sporterdropdown IN het formulier voor het inplannen van een sessie.
  */
 export function populateSessionClientSelect(selectedEmail = "") {
-  const selectEl = document.getElementById('sessionClientSelect');
-  if (!selectEl) return;
+  const searchInput = document.getElementById('sessionClientSearchInput');
+  const hiddenInput = document.getElementById('sessionClientSelect');
+  const dropdownList = document.getElementById('customFormClientDropdownList');
 
-  selectEl.innerHTML = '<option value="" disabled selected>-- Kies een sporter --</option>';
+  if (!searchInput || !hiddenInput || !dropdownList) return;
+
+  if (selectedEmail !== undefined && selectedEmail !== null) {
+    hiddenInput.value = selectedEmail;
+  }
 
   const clients = getLoadedClients();
+  const filterText = searchInput.value.trim().toLowerCase();
+  const currentSelected = hiddenInput.value;
+
+  // Vul de zichtbare tekst in als er al een sporter gekozen was
+  if (currentSelected) {
+    const activeClient = clients.find(c => c.email === currentSelected);
+    if (activeClient) {
+      searchInput.value = activeClient.name;
+    }
+  }
+
+  let html = '';
   clients.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.email;
-    opt.textContent = c.name;
-    selectEl.appendChild(opt);
+    if (!filterText || filterText === '-- kies een sporter --' || c.name.toLowerCase().includes(filterText)) {
+      const isSelected = c.email === currentSelected;
+      const activeStyle = isSelected ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : '';
+      html += `<div class="custom-dropdown-item ${isSelected ? 'active' : ''}" data-email="${c.email}" style="${activeStyle}">${c.name}</div>`;
+    }
   });
 
-  if (selectedEmail) {
-    selectEl.value = selectedEmail;
+  if (!html) {
+    html = `<div class="custom-dropdown-item" style="color: var(--text-muted); cursor: default;">Geen sporters gevonden</div>`;
   }
+
+  dropdownList.innerHTML = html;
+
+  dropdownList.querySelectorAll('.custom-dropdown-item[data-email]').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const email = item.getAttribute('data-email');
+      const name = item.textContent;
+
+      hiddenInput.value = email;
+      searchInput.value = name;
+      dropdownList.style.display = 'none';
+      searchInput.style.borderColor = 'var(--glass-border)';
+    });
+  });
 }
 
 /**
@@ -83,7 +138,14 @@ export function toggleCoachSessionForm() {
     card.style.display = 'block';
     if (listCard) listCard.style.display = 'none';
 
-    populateSessionClientSelect();
+    document.getElementById('sessionClientSelect').value = "";
+    const searchInput = document.getElementById('sessionClientSearchInput');
+    if (searchInput) {
+      searchInput.value = "";
+      searchInput.placeholder = "-- Kies een sporter --";
+    }
+
+    populateSessionClientSelect("");
     document.getElementById('editingSessionId').value = "";
     document.getElementById('sessionDate').value = "";
     document.getElementById('sessionTime').value = "";
@@ -348,7 +410,7 @@ function showCustomConfirm(title, text, onConfirm) {
   };
 }
 
-// INITIËLE KOPPELING VAN EVENTS VIA JAVASCRIPT ZONDER INLINE HTML EVENTS
+// INITIËLE KOPPELING VAN EVENTS
 function initCoachAgendaListeners() {
   const topBtn = document.getElementById('topCreateSessionBtn');
   if (topBtn) {
@@ -368,6 +430,84 @@ function initCoachAgendaListeners() {
   const historyBtn = document.getElementById('btnToggleAgendaHistory');
   if (historyBtn) {
     historyBtn.addEventListener('click', toggleAgendaHistoryMode);
+  }
+
+  const dateFilterInput = document.getElementById('agendaFilterDate');
+  if (dateFilterInput) {
+    dateFilterInput.addEventListener('change', renderCoachSessions);
+  }
+
+  // 1) Custom Dropdown voor Agendafilter
+  const filterSearchInput = document.getElementById('agendaFilterClientSearchInput');
+  const filterHiddenInput = document.getElementById('agendaFilterClientSelect');
+  const filterDropdownList = document.getElementById('customAgendaDropdownList');
+
+  if (filterSearchInput && filterDropdownList) {
+    filterSearchInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterDropdownList.style.display = 'block';
+      filterSearchInput.style.borderColor = 'var(--gold-accent)';
+      filterSearchInput.value = '';
+      populateAgendaFilterClients();
+    });
+
+    filterSearchInput.addEventListener('input', () => {
+      filterDropdownList.style.display = 'block';
+      filterSearchInput.style.borderColor = 'var(--gold-accent)';
+      populateAgendaFilterClients();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#coachAgendaListContainer .custom-dropdown-wrapper')) {
+        filterDropdownList.style.display = 'none';
+        filterSearchInput.style.borderColor = 'var(--glass-border)';
+
+        const currentEmail = filterHiddenInput ? filterHiddenInput.value : '';
+        if (currentEmail) {
+          const client = getLoadedClients().find(c => c.email === currentEmail);
+          filterSearchInput.value = client ? client.name : 'Alle Sporters';
+        } else {
+          filterSearchInput.value = 'Alle Sporters';
+        }
+      }
+    });
+  }
+
+  // 2) Custom Dropdown voor het Inplanformulier (Sessie Inplannen)
+  const formSearchInput = document.getElementById('sessionClientSearchInput');
+  const formHiddenInput = document.getElementById('sessionClientSelect');
+  const formDropdownList = document.getElementById('customFormClientDropdownList');
+
+  if (formSearchInput && formDropdownList) {
+    formSearchInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+      formDropdownList.style.display = 'block';
+      formSearchInput.style.borderColor = 'var(--gold-accent)';
+      formSearchInput.value = '';
+      populateSessionClientSelect();
+    });
+
+    formSearchInput.addEventListener('input', () => {
+      formDropdownList.style.display = 'block';
+      formSearchInput.style.borderColor = 'var(--gold-accent)';
+      populateSessionClientSelect();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#coachSessionFormCard .custom-dropdown-wrapper')) {
+        formDropdownList.style.display = 'none';
+        formSearchInput.style.borderColor = 'var(--glass-border)';
+
+        const currentEmail = formHiddenInput ? formHiddenInput.value : '';
+        if (currentEmail) {
+          const client = getLoadedClients().find(c => c.email === currentEmail);
+          formSearchInput.value = client ? client.name : '';
+        } else {
+          formSearchInput.value = '';
+          formSearchInput.placeholder = '-- Kies een sporter --';
+        }
+      }
+    });
   }
 }
 

@@ -12,6 +12,7 @@ export function updateCoachFabVisibility() {
   const clientsTab = document.getElementById('coachTabClients');
   const agendaTab = document.getElementById('coachTabAgenda');
   const exTab = document.getElementById('coachTabExercises');
+  const masterTmplTab = document.getElementById('coachTabMasterTemplates');
 
   const fabTmpl = document.getElementById('floatingCoachAddTemplateBtn');
   const fabSess = document.getElementById('floatingCoachAddSessionBtn');
@@ -23,7 +24,6 @@ export function updateCoachFabVisibility() {
   if (fabEx) fabEx.style.display = 'none';
 
   if (clientsTab && clientsTab.style.display !== 'none') {
-    // De schema FAB blijft permanent op 'none' staan omdat er altijd een vaste knop bovenaan de lijst staat
     if (fabTmpl) fabTmpl.style.display = 'none';
   } else if (agendaTab && agendaTab.style.display !== 'none') {
     const sessForm = document.getElementById('coachSessionFormCard');
@@ -33,18 +33,21 @@ export function updateCoachFabVisibility() {
     const exForm = document.getElementById('coachNewExerciseCard');
     const isFormOpen = exForm && exForm.style.display !== 'none';
     if (fabEx) fabEx.style.display = isFormOpen ? 'none' : 'flex';
+  } else if (masterTmplTab && masterTmplTab.style.display !== 'none') {
+    if (fabTmpl) fabTmpl.style.display = 'none';
   }
 }
 
 /**
  * Schakelt tussen de hoofdtabbladen van het coach-dashboard.
- * @param {'clients'|'agenda'|'exercises'} tab 
+ * @param {'clients'|'agenda'|'exercises'|'masterTemplates'} tab 
  * @param {Object} renderCallbacks 
  */
 export function switchCoachTab(tab, renderCallbacks = {}) {
   const clientsTab = document.getElementById('coachTabClients');
   const agendaTab = document.getElementById('coachTabAgenda');
   const exTab = document.getElementById('coachTabExercises');
+  const masterTmplTab = document.getElementById('coachTabMasterTemplates');
 
   // Harde isolatie van de hoofdtabbladen
   if (clientsTab) {
@@ -77,9 +80,20 @@ export function switchCoachTab(tab, renderCallbacks = {}) {
     }
   }
 
+  if (masterTmplTab) {
+    if (tab === 'masterTemplates') {
+      masterTmplTab.style.setProperty('display', 'flex', 'important');
+      masterTmplTab.style.setProperty('flex-direction', 'column', 'important');
+      masterTmplTab.style.setProperty('width', '100%', 'important');
+    } else {
+      masterTmplTab.style.setProperty('display', 'none', 'important');
+    }
+  }
+
   document.getElementById('coachTabClientsBtn')?.classList.toggle('active', tab === 'clients');
   document.getElementById('coachTabAgendaBtn')?.classList.toggle('active', tab === 'agenda');
   document.getElementById('coachTabExercisesBtn')?.classList.toggle('active', tab === 'exercises');
+  document.getElementById('coachTabMasterTemplatesBtn')?.classList.toggle('active', tab === 'masterTemplates');
 
   if (tab === 'clients' && typeof renderCallbacks.onClientsActive === 'function') {
     renderCallbacks.onClientsActive();
@@ -89,6 +103,9 @@ export function switchCoachTab(tab, renderCallbacks = {}) {
   }
   if (tab === 'exercises' && typeof renderCallbacks.onExercisesActive === 'function') {
     renderCallbacks.onExercisesActive();
+  }
+  if (tab === 'masterTemplates' && typeof renderCallbacks.onMasterTemplatesActive === 'function') {
+    renderCallbacks.onMasterTemplatesActive();
   }
 
   updateCoachFabVisibility();

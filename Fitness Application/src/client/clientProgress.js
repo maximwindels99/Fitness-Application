@@ -72,6 +72,7 @@ export function updateProgressChart() {
   }
 
   const selectedEx = availableExercises.find(e => e.id === state.selectedProgressExerciseId) || availableExercises[0];
+  const selectedCatStr = selectedEx ? (Array.isArray(selectedEx.category) ? selectedEx.category.join(', ') : selectedEx.category) : '';
 
   if (!document.getElementById('progressChart')) {
     const currentTimeline = state.clientTimelineFilter || '10';
@@ -79,15 +80,15 @@ export function updateProgressChart() {
     card.innerHTML = `
       <h3 style="margin-top: 0; color: #fff; font-size: 1.1rem; font-weight: 700;">Progressie Per Oefening</h3>
       
-      <!-- Custom AQM Searchable Dropdown -->
+      <!-- Custom AQM Searchable Dropdown (Stijlvol Pilvormig) -->
       <label style="display: block; margin: 10px 0 6px 0; font-size: 0.82rem; color: var(--text-muted);">Selecteer een oefening:</label>
-      <div class="custom-dropdown-wrapper" style="position: relative; margin-bottom: 12px;">
-        <button id="progressDropdownTrigger" class="auth-select" style="display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; cursor: pointer; padding: 12px 18px !important; height: auto;" onclick="toggleProgressDropdown(event)">
-          <span id="progressDropdownSelectedText" style="line-height: 1.2;">${selectedEx ? `${selectedEx.name} (${selectedEx.category})` : 'Selecteer Oefening'}</span>
+      <div class="custom-dropdown-wrapper" style="position: relative; margin-bottom: 16px;">
+        <button id="progressDropdownTrigger" type="button" style="display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; cursor: pointer; padding: 12px 16px !important; background: var(--bg-input); border: 1px solid var(--glass-border); border-radius: var(--pill-radius); color: #fff; height: auto;" onclick="toggleProgressDropdown(event)">
+          <span id="progressDropdownSelectedText" style="line-height: 1.2; font-weight: 600; font-size: 0.9rem; color: var(--white);">${selectedEx ? `${selectedEx.name} (${selectedCatStr})` : 'Selecteer Oefening'}</span>
           <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;"></i>
         </button>
-        <div id="progressDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: 12px; z-index: 100; margin-top: 4px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-          <input type="text" id="progressExerciseSearchInput" placeholder="Zoek oefening..." class="auth-select" style="padding: 10px 14px !important; margin-bottom: 8px; font-size: 0.85rem;" oninput="filterProgressExerciseList()" />
+        <div id="progressDropdownMenu" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: #121927; border: 1px solid var(--glass-border); border-radius: 12px; z-index: 1000; margin-top: 6px; padding: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.7);">
+          <input type="text" id="progressExerciseSearchInput" placeholder="Zoek oefening..." style="width: 100%; padding: 10px 14px !important; margin-bottom: 8px; font-size: 0.85rem; background: #1A2234; border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; outline: none;" oninput="filterProgressExerciseList()" />
           <div id="progressExerciseList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;"></div>
         </div>
       </div>
@@ -118,7 +119,7 @@ export function updateProgressChart() {
         <canvas id="progressChart"></canvas>
       </div>
 
-      <!-- Onderzijde: Rij 1 (Start, Huidig PR, % Toename) - Uniforme rustige stijl -->
+      <!-- Onderzijde: Rij 1 (Start, Huidig PR, % Toename) -->
       <div id="progressBottomStatsRow1" class="stats-summary-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px;">
         <div style="background: var(--bg-input); padding: 8px 6px; border-radius: 10px; border: 1px solid var(--glass-border); text-align: center;">
           <span style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">START</span>
@@ -137,7 +138,7 @@ export function updateProgressChart() {
         </div>
       </div>
 
-      <!-- Onderzijde: Rij 2 (Volume, Sessies, Gemiddelde) - Clean zonder extra subtekst -->
+      <!-- Onderzijde: Rij 2 (Volume, Sessies, Gemiddelde) -->
       <div id="progressBottomStatsRow2" class="stats-summary-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px;">
         <div style="background: var(--bg-input); padding: 10px 6px; border-radius: 10px; border: 1px solid var(--glass-border); text-align: center;">
           <span style="display: block; font-size: 0.65rem; color: var(--text-muted); font-weight: 600;">VOLUME</span>
@@ -231,7 +232,7 @@ export function renderClientChartData(userHistory) {
     filteredPoints = filteredPoints.filter(p => p.timestamp >= startOfYear);
   }
 
-  // Onderste vakken - Rij 1 (Start, Huidig PR, % Toename)
+  // Onderste vakken - Rij 1
   const startDisp = document.getElementById('progressStartDisplay');
   const startDateDisp = document.getElementById('progressStartDateDisplay');
   const maxPrDisp = document.getElementById('progressMaxPRDisplay');
@@ -239,7 +240,7 @@ export function renderClientChartData(userHistory) {
   const increaseDisp = document.getElementById('progressIncreaseDisplay');
   const increaseKgDisp = document.getElementById('progressIncreaseKgDisplay');
 
-  // Onderste vakken - Rij 2 (Volume, Sessies, Gemiddelde)
+  // Onderste vakken - Rij 2
   const volDisp = document.getElementById('progressVolumeDisplay');
   const sessDisp = document.getElementById('progressSessionsDisplay');
   const avgWeightDisp = document.getElementById('progressAvgWeightDisplay');
@@ -274,7 +275,6 @@ export function renderClientChartData(userHistory) {
     if (increaseDisp) increaseDisp.innerText = diffKg >= 0 ? `+${pctIncrease}%` : `${pctIncrease}%`;
     if (increaseKgDisp) increaseKgDisp.innerText = diffKg >= 0 ? `+${diffKg} kg` : `${diffKg} kg`;
 
-    // Rij 2 invullen (Met duizendtal-scheiding in kg, afgerond gemiddelde, en ENKEL het getal bij sessies)
     if (volDisp) volDisp.innerText = `${totalVol.toLocaleString('nl-NL')} kg`;
     if (sessDisp) sessDisp.innerText = `${filteredPoints.length}`;
     if (avgWeightDisp) avgWeightDisp.innerText = `${avgWeight} kg`;
@@ -294,15 +294,6 @@ export function renderClientChartData(userHistory) {
   const metric = state.clientProgressMetric || 'weight';
   const labels = filteredPoints.map(p => p.displayDate);
   const dataValues = filteredPoints.map(p => metric === 'weight' ? p.weight : p.oneRM);
-
-  let yMin = 0;
-  let yMax = undefined;
-  if (dataValues.length > 0) {
-    const minVal = Math.min(...dataValues);
-    const maxVal = Math.max(...dataValues);
-    yMin = Math.max(0, Math.floor(minVal - 2));
-    yMax = Math.ceil(maxVal + 2);
-  }
 
   const ctx = canvas.getContext('2d');
   if (clientChartInstance) clientChartInstance.destroy();
@@ -359,13 +350,15 @@ export function renderClientChartData(userHistory) {
           grid: { color: 'rgba(255, 255, 255, 0.05)' }
         },
         y: {
-          min: yMin,
-          max: yMax,
           ticks: {
             color: '#8E8E93',
             font: { size: 10 },
+            precision: 0,
+            stepSize: 1,
             callback: function(value) {
-              return Math.round(value);
+              if (Number.isInteger(value)) {
+                return value;
+              }
             }
           },
           grid: { color: 'rgba(255, 255, 255, 0.05)' }
@@ -381,6 +374,7 @@ function populateProgressExerciseList(exercises, userHistory) {
 
   list.innerHTML = '';
   exercises.forEach(ex => {
+    const catStr = Array.isArray(ex.category) ? ex.category.join(', ') : ex.category;
     const item = document.createElement('div');
     item.style.cssText = `
       display: flex; justify-content: space-between; align-items: center;
@@ -391,7 +385,7 @@ function populateProgressExerciseList(exercises, userHistory) {
     `;
     item.innerHTML = `
       <span style="font-size: 0.88rem; font-weight: 500;">${ex.name}</span>
-      <span class="exercise-badge" style="font-size: 0.7rem; padding: 2px 8px; margin: 0;">${ex.category}</span>
+      <span class="exercise-badge" style="font-size: 0.7rem; padding: 2px 8px; margin: 0;">${catStr}</span>
     `;
 
     item.onmouseover = () => { if (ex.id !== state.selectedProgressExerciseId) item.style.background = 'rgba(255, 255, 255, 0.05)'; };
@@ -401,7 +395,7 @@ function populateProgressExerciseList(exercises, userHistory) {
       e.stopPropagation();
       state.selectedProgressExerciseId = ex.id;
       const text = document.getElementById('progressDropdownSelectedText');
-      if (text) text.innerText = `${ex.name} (${ex.category})`;
+      if (text) text.innerText = `${ex.name} (${catStr})`;
       toggleProgressDropdown(null, false);
       populateProgressExerciseList(exercises, userHistory);
       renderClientChartData(userHistory);

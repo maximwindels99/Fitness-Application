@@ -5,6 +5,7 @@
 
 import { state } from './state.js';
 import { getUsers, saveUsers, getCurrentUserEmail, setCurrentUserEmail } from './storage.js';
+import { renderCoachModalClientsList } from '../coach/coachClients.js';
 
 /**
  * Controleert de sessiestatus bij het opstarten van de app.
@@ -14,7 +15,7 @@ export function checkAuthState(callbacks = {}) {
   const savedEmail = getCurrentUserEmail();
 
   if (savedEmail) {
-    const user = users.find(u => u.email === savedEmail);
+    const user = users.find(u => u.email.toLowerCase() === savedEmail.toLowerCase());
     if (user) {
       state.currentUser = user;
       showAppUI();
@@ -38,10 +39,18 @@ export function checkAuthState(callbacks = {}) {
 export function initAuth(callbacks = {}) {
   checkAuthState(callbacks);
 
-  // Koppel de ontkoppelknop
   const btnUnlink = document.getElementById('btnUnlinkCoach');
   if (btnUnlink) {
     btnUnlink.addEventListener('click', unlinkCoach);
+  }
+
+  // Luister naar het sluiten van de gekoppelde sporters modal
+  const closeLinkedBtn = document.getElementById('closeLinkedClientsModalBtn');
+  if (closeLinkedBtn) {
+    closeLinkedBtn.addEventListener('click', () => {
+      const linkedClientsModal = document.getElementById('linkedClientsModal');
+      if (linkedClientsModal) linkedClientsModal.style.display = 'none';
+    });
   }
 }
 
@@ -77,7 +86,6 @@ export function login(callbacks = {}) {
   const password = passInput?.value.trim();
 
   if (!email || !password) {
-    alert("Vul a.u.b. alle velden in.");
     return;
   }
 
@@ -85,7 +93,6 @@ export function login(callbacks = {}) {
   const user = users.find(u => u.email.toLowerCase() === email && u.password === password);
 
   if (!user) {
-    alert("Ongeldige inloggegevens. Controleer je e-mailadres en wachtwoord.");
     return;
   }
 
@@ -119,13 +126,11 @@ export function register(callbacks = {}) {
   const role = roleRadio ? roleRadio.value : 'client';
 
   if (!firstName || !lastName || !dob || !email || !password) {
-    alert("Vul a.u.b. alle verplichte velden in.");
     return;
   }
 
   let users = getUsers();
   if (users.some(u => u.email.toLowerCase() === email)) {
-    alert("Er bestaat al een account met dit e-mailadres.");
     return;
   }
 
@@ -213,37 +218,41 @@ export function toggleProfileModal() {
   modal.style.display = isHidden ? 'flex' : 'none';
 
   if (isHidden && state.currentUser) {
+    const users = getUsers();
+    const freshUser = users.find(u => u.email.toLowerCase() === state.currentUser.email.toLowerCase()) || state.currentUser;
+    state.currentUser = freshUser;
+
     const profFirstName = document.getElementById('profFirstName');
     const profLastName = document.getElementById('profLastName');
     const profEmail = document.getElementById('profEmail');
     const profDob = document.getElementById('profDob');
 
-    if (profFirstName) profFirstName.value = state.currentUser.firstName || '';
-    if (profLastName) profLastName.value = state.currentUser.lastName || '';
-    if (profEmail) profEmail.value = state.currentUser.email || '';
-    if (profDob) profDob.value = state.currentUser.dob || '';
+    if (profFirstName) profFirstName.value = freshUser.firstName || '';
+    if (profLastName) profLastName.value = freshUser.lastName || '';
+    if (profEmail) profEmail.value = freshUser.email || '';
+    if (profDob) profDob.value = freshUser.dob || '';
 
     const modalUserName = document.getElementById('modalUserName');
     const modalUserRoleBadge = document.getElementById('modalUserRoleBadge');
 
-    if (modalUserName) modalUserName.innerText = state.currentUser.name || `${state.currentUser.firstName} ${state.currentUser.lastName}`;
-    if (modalUserRoleBadge) modalUserRoleBadge.innerText = state.currentUser.role === 'coach' ? 'Coach' : 'Sporter (Client)';
+    if (modalUserName) modalUserName.innerText = freshUser.name || `${freshUser.firstName} ${freshUser.lastName}`;
+    if (modalUserRoleBadge) modalUserRoleBadge.innerText = freshUser.role === 'coach' ? 'Coach' : 'Sporter (Client)';
 
     const modalClientSection = document.getElementById('modalClientSection');
     const modalCoachSection = document.getElementById('modalCoachSection');
 
-    if (modalClientSection) modalClientSection.style.display = state.currentUser.role === 'coach' ? 'none' : 'block';
-    if (modalCoachSection) modalCoachSection.style.display = state.currentUser.role === 'coach' ? 'block' : 'none';
+    if (modalClientSection) modalClientSection.style.display = freshUser.role === 'coach' ? 'none' : 'block';
+    if (modalCoachSection) modalCoachSection.style.display = freshUser.role === 'coach' ? 'block' : 'none';
 
-    // ALS SPORTER: TOON WEL OF GEEN GEKOPPELDE COACH
-    if (state.currentUser.role !== 'coach') {
+    // SPORTER VIEW: CONTROLEREN OP GEKOPPELDE COACH
+    if (freshUser.role !== 'coach') {
       const unlinkedBox = document.getElementById('clientUnlinkedBox');
       const linkedBox = document.getElementById('clientLinkedBox');
       
-      const users = getUsers();
-      const linkedCoach = users.find(u => u.role === 'coach' && (u.coachId === state.currentUser.linkedCoachId || u.id === state.currentUser.linkedCoachId));
+      const targetCode = (freshUser.linkedCoachId || freshUser.linkedCoachCode || '').toUpperCase();
+      const linkedCoach = users.find(u => u.role === 'coach' && u.coachId && u.coachId.toUpperCase() === targetCode);
 
-      if (linkedCoach || state.currentUser.linkedCoachId) {
+      if (linkedCoach || targetCode) {
         if (unlinkedBox) unlinkedBox.style.display = 'none';
         if (linkedBox) linkedBox.style.display = 'block';
 
@@ -251,19 +260,29 @@ export function toggleProfileModal() {
         const codeDisp = document.getElementById('linkedCoachCodeDisplay');
 
         if (nameDisp) {
-  nameDisp.innerText = linkedCoach ? linkedCoach.name || `${linkedCoach.firstName} ${linkedCoach.lastName}` : 'Mijn Coach';
-  nameDisp.style.color = 'var(--gold-accent)';
-}
-        if (codeDisp) codeDisp.innerText = state.currentUser.linkedCoachId || (linkedCoach ? linkedCoach.coachId : '');
+          nameDisp.innerText = linkedCoach ? (linkedCoach.name || `${linkedCoach.firstName} ${linkedCoach.lastName}`) : 'Mijn Coach';
+          nameDisp.style.color = 'var(--gold-accent)';
+        }
+        if (codeDisp) codeDisp.innerText = targetCode || (linkedCoach ? linkedCoach.coachId : '');
       } else {
         if (unlinkedBox) unlinkedBox.style.display = 'block';
         if (linkedBox) linkedBox.style.display = 'none';
       }
     }
 
-    if (state.currentUser.role === 'coach') {
+    // COACH VIEW: COACH-ID WEERGEVEN EN GEKOPPELDE SPORTERS KNOP BINDEN
+    if (freshUser.role === 'coach') {
       const modalCoachIdDisplay = document.getElementById('modalCoachIdDisplay');
-      if (modalCoachIdDisplay) modalCoachIdDisplay.innerText = state.currentUser.coachId || 'Geen ID';
+      if (modalCoachIdDisplay) modalCoachIdDisplay.innerText = freshUser.coachId || 'Geen ID';
+
+      const btnOpenLinked = document.getElementById('btnOpenLinkedClientsModal');
+      if (btnOpenLinked) {
+        btnOpenLinked.onclick = () => {
+          renderCoachModalClientsList();
+          const linkedClientsModal = document.getElementById('linkedClientsModal');
+          if (linkedClientsModal) linkedClientsModal.style.display = 'flex';
+        };
+      }
     }
   }
 }
@@ -278,7 +297,6 @@ export function saveProfileChanges() {
   const password = document.getElementById('profPassword')?.value.trim();
 
   if (!firstName || !lastName || !email) {
-    alert("Voornaam, achternaam en e-mailadres zijn verplicht.");
     return;
   }
 
@@ -290,7 +308,7 @@ export function saveProfileChanges() {
   if (password) state.currentUser.password = password;
 
   let users = getUsers();
-  const idx = users.findIndex(u => u.email === state.currentUser.email || u.id === state.currentUser.id);
+  const idx = users.findIndex(u => u.email.toLowerCase() === state.currentUser.email.toLowerCase());
   if (idx !== -1) {
     users[idx] = state.currentUser;
     saveUsers(users);
@@ -299,32 +317,31 @@ export function saveProfileChanges() {
   setCurrentUserEmail(state.currentUser.email);
   updateProfileUI();
   toggleProfileModal();
-  alert("Profiel succesvol bijgewerkt!");
 }
 
 export function linkCoachByCode() {
-  const code = document.getElementById('inputCoachCode')?.value.trim().toUpperCase();
-  if (!code) {
-    alert("Vul een geldige coach-code in.");
-    return;
-  }
+  const codeInput = document.getElementById('inputCoachCode');
+  const code = codeInput?.value.trim().toUpperCase();
+  if (!code) return;
 
-  const users = getUsers();
-  const coach = users.find(u => u.role === 'coach' && u.coachId === code);
+  let users = getUsers();
+  const coach = users.find(u => u.role === 'coach' && u.coachId && u.coachId.toUpperCase() === code);
 
   if (!coach) {
-    alert("Geen coach gevonden met deze code. Controleer de code en probeer opnieuw.");
     return;
   }
 
   state.currentUser.linkedCoachId = code;
-  const idx = users.findIndex(u => u.email === state.currentUser.email || u.id === state.currentUser.id);
+  state.currentUser.linkedCoachCode = code;
+
+  const idx = users.findIndex(u => u.email.toLowerCase() === state.currentUser.email.toLowerCase());
   if (idx !== -1) {
     users[idx] = state.currentUser;
     saveUsers(users);
   }
 
-  alert(`Succesvol gekoppeld aan je coach (${coach.name || coach.firstName})!`);
+  if (codeInput) codeInput.value = '';
+  toggleProfileModal();
   toggleProfileModal();
 }
 
@@ -332,17 +349,16 @@ export function linkCoachByCode() {
  * Verbreekt de koppeling met de coach.
  */
 export function unlinkCoach() {
-  if (confirm("Weet je zeker dat je de koppeling met je coach wilt verbreken?")) {
-    state.currentUser.linkedCoachId = null;
+  state.currentUser.linkedCoachId = null;
+  delete state.currentUser.linkedCoachCode;
 
-    let users = getUsers();
-    const idx = users.findIndex(u => u.email === state.currentUser.email || u.id === state.currentUser.id);
-    if (idx !== -1) {
-      users[idx] = state.currentUser;
-      saveUsers(users);
-    }
-
-    alert("Koppeling met de coach is verbroken.");
-    toggleProfileModal();
+  let users = getUsers();
+  const idx = users.findIndex(u => u.email.toLowerCase() === state.currentUser.email.toLowerCase());
+  if (idx !== -1) {
+    users[idx] = state.currentUser;
+    saveUsers(users);
   }
+
+  toggleProfileModal();
+  toggleProfileModal();
 }

@@ -164,7 +164,7 @@ export function updateCoachProgressChart() {
       <!-- CUSTOM PILVORMMIGE DROPDOWN -->
       <div class="coach-ex-dropdown-wrapper" style="position: relative; width: 100%; margin-bottom: 16px;">
         <div id="coachExDropdownTrigger" class="inline-client-select" style="width: 100%; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: var(--bg-input); padding: 12px 16px; border-radius: var(--pill-radius); border: 1px solid var(--glass-border);">
-          <span id="coachExDropdownLabel" style="font-size: 0.9rem; font-weight: 600; color: var(--white);">${currentEx ? `${currentEx.name} (${currentEx.category})` : '-- Kies Oefening --'}</span>
+          <span id="coachExDropdownLabel" style="font-size: 0.9rem; font-weight: 600; color: var(--white);">${currentEx ? `${currentEx.name} (${Array.isArray(currentEx.category) ? currentEx.category.join(', ') : currentEx.category})` : '-- Kies Oefening --'}</span>
           <i class="fa-solid fa-chevron-down" style="font-size: 0.82rem; color: var(--text-muted);"></i>
         </div>
         <div id="coachExDropdownMenu" class="custom-dropdown-menu" style="display: none; width: 100%; position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; margin-top: 6px;"></div>
@@ -243,7 +243,8 @@ export function updateCoachProgressChart() {
   availableExercises.forEach(ex => {
     const item = document.createElement('div');
     item.className = `custom-dropdown-item ${ex.id === state.selectedCoachExerciseId ? 'active' : ''}`;
-    item.innerText = `${ex.name} (${ex.category})`;
+    const catStr = Array.isArray(ex.category) ? ex.category.join(', ') : ex.category;
+    item.innerText = `${ex.name} (${catStr})`;
     item.onclick = (e) => {
       e.stopPropagation();
       state.selectedCoachExerciseId = ex.id;
@@ -357,7 +358,7 @@ function renderCoachChartData(clientHistory) {
     filteredPoints = rawDataPoints.filter(p => p.timestamp >= cutoff.getTime());
   }
 
-  // Statistieken invullen (Sessies toont enkel het getal)
+  // Statistieken invullen
   if (filteredPoints.length > 0) {
     const metric = state.coachProgressMetric || 'weight';
     const firstP = filteredPoints[0];
@@ -394,7 +395,7 @@ function renderCoachChartData(clientHistory) {
     document.getElementById('coachStatAvg').innerText = `${avgVal} kg`;
   }
 
-  // Chart Rendering (MAXIMAAL 7 DATUMS OP DE X-AS)
+  // Chart Rendering (ENKEL GEHELE GETALLEN OP DE Y-AS EN GEEN DUBBELE LABELS)
   const ctx = canvas.getContext('2d');
   if (coachChartInstance) coachChartInstance.destroy();
 
@@ -446,8 +447,12 @@ function renderCoachChartData(clientHistory) {
           ticks: { 
             color: '#8E8E93', 
             font: { size: 10 },
+            precision: 0,
+            stepSize: 1,
             callback: function(value) {
-              return Math.round(value);
+              if (Number.isInteger(value)) {
+                return value;
+              }
             }
           }, 
           grid: { color: 'rgba(255, 255, 255, 0.05)' } 

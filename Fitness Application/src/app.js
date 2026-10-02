@@ -1,6 +1,6 @@
 // ==========================================================================
 // MAIN ENTRY POINT MODULE (app.js)
-// Centraliseert initialisatie, DOM-event listeners en window-bindings
+// Centraliseert initialisatie, DOM-event listeners en window-bindings (< 200 regels)
 // ==========================================================================
 
 import { state } from './core/state.js';
@@ -45,6 +45,10 @@ import {
 import { 
   renderCoachExercisesList, toggleCoachNewExerciseForm, saveCoachCustomExercise 
 } from './coach/coachExercises.js';
+import { 
+  renderCoachMasterTemplatesList, toggleCoachMasterTemplateForm, 
+  addExerciseToMasterTemplate, saveCoachMasterTemplate 
+} from './coach/coachMasterTemplates.js';
 
 // Event Handlers Binder
 document.addEventListener('DOMContentLoaded', () => {
@@ -68,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Formulieren ook via Enter-toets laten verzenden
   document.getElementById('loginFormContainer')?.addEventListener('submit', (e) => {
     e.preventDefault();
     bootAuth('login');
@@ -79,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     bootAuth('register');
   });
 
-  // Schakelen tussen inloggen en registreren links
   document.getElementById('toRegisterLink')?.addEventListener('click', (e) => {
     e.preventDefault();
     toggleAuth('register');
@@ -136,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('coachTabClientsBtn')?.addEventListener('click', () => switchCoachTab('clients', { onClientsActive: () => renderCoachClientDropdown(onCoachClientSelected) }));
   document.getElementById('coachTabAgendaBtn')?.addEventListener('click', () => switchCoachTab('agenda', { onAgendaActive: () => { populateAgendaFilterClients(); renderCoachSessions(); } }));
   document.getElementById('coachTabExercisesBtn')?.addEventListener('click', () => switchCoachTab('exercises', { onExercisesActive: renderCoachExercisesList }));
+  document.getElementById('coachTabMasterTemplatesBtn')?.addEventListener('click', () => switchCoachTab('masterTemplates', { onMasterTemplatesActive: renderCoachMasterTemplatesList }));
 
   document.getElementById('coachClientSubTabHistBtn')?.addEventListener('click', (e) => switchCoachClientSubTab('history', e, { onSubHistory: renderCoachClientHistory }));
   document.getElementById('coachClientSubTabChartBtn')?.addEventListener('click', (e) => switchCoachClientSubTab('chart', e, { onSubChart: updateCoachProgressChart }));
@@ -145,6 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('addExerciseToCoachTemplateBtn')?.addEventListener('click', () => addExerciseToCoachTemplate());
   document.getElementById('saveCoachTemplateBtn')?.addEventListener('click', saveCoachClientTemplate);
   document.getElementById('cancelCoachTemplateBtn')?.addEventListener('click', toggleCoachNewTemplateForm);
+
+  // Master Templates
+  document.getElementById('topCreateMasterTemplateBtn')?.addEventListener('click', toggleCoachMasterTemplateForm);
+  document.getElementById('addExerciseToMasterTemplateBtn')?.addEventListener('click', () => addExerciseToMasterTemplate());
+  document.getElementById('saveMasterTemplateBtn')?.addEventListener('click', saveCoachMasterTemplate);
+  document.getElementById('cancelMasterTemplateBtn')?.addEventListener('click', toggleCoachMasterTemplateForm);
 
   document.getElementById('floatingCoachAddSessionBtn')?.addEventListener('click', () => { populateAgendaFilterClients(); toggleCoachSessionForm(); });
   document.getElementById('saveSessionBtn')?.addEventListener('click', saveCoachSession);
@@ -165,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     onCoachLogin: () => switchCoachTab('clients', { onClientsActive: () => renderCoachClientDropdown(onCoachClientSelected) })
   });
 
-  // Zorg dat profielweergave direct juist staat
   updateProfileUI();
 });
 

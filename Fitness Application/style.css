@@ -214,64 +214,51 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   4) FLOATING LABELS & INVOERVELDEN
+   4) FLOATING LABELS (Plaatsing bovenin invoerveld zonder overlap)
    -------------------------------------------------------------------------- */
 .floating-group {
   position: relative;
-  width: 100%;
+  margin-bottom: 16px;
 }
 
 .floating-group input,
-.floating-group textarea,
-.floating-group select,
-.auth-select,
-#coachClientSearchInput {
+.floating-group textarea {
   width: 100%;
-  padding: 14px 16px;
-  background: var(--bg-input) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: var(--pill-radius) !important;
-  color: var(--text-main) !important;
+  padding: 22px 14px 8px 14px !important; 
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  color: var(--text-main);
   font-size: 0.95rem;
-  font-weight: 500;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  box-sizing: border-box;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(100%) saturate(1000%) hue-rotate(5deg);
-  cursor: pointer;
-}
-
-.floating-group input:focus,
-.floating-group textarea:focus,
-.floating-group select:focus,
-.auth-select:focus,
-#coachClientSearchInput:focus {
-  border-color: var(--gold-accent) !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .floating-group label {
   position: absolute;
-  left: 18px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 0.92rem;
-  font-weight: 500;
+  font-size: 0.9rem;
   pointer-events: none;
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), font-size 0.2s ease, color 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.floating-group textarea ~ label {
+  top: 18px;
+  transform: none;
 }
 
 .floating-group input:focus ~ label,
 .floating-group input:not(:placeholder-shown) ~ label,
 .floating-group textarea:focus ~ label,
 .floating-group textarea:not(:placeholder-shown) ~ label {
-  transform: translateY(-20px);
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--gold-accent);
+  top: 6px !important;
+  transform: scale(0.75) !important;
+  transform-origin: left top;
+  color: var(--gold-accent) !important;
+  font-weight: 600;
 }
 
 /* --------------------------------------------------------------------------
@@ -318,12 +305,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   max-width: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-width 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.25s ease;
+  transition: max-width 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.5s ease;
   white-space: nowrap;
 }
 
 .sliding-actions-drawer.open {
-  max-width: 140px;
+  max-width: 200px;
   opacity: 1;
 }
 
@@ -358,7 +345,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-sizing: border-box;
 }
 
-/* Set header en set invoer grids in forms/modals */
 .tmpl-sets-header,
 .tmpl-set-row-grid,
 .set-headers-row,
@@ -376,7 +362,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-sizing: border-box !important;
 }
 
-/* Driekolom set-rijen zonder actieknop (bijv. in historie edit) */
 .modal-card div[style*="grid-template-columns"],
 .modal-card .history-set-row {
   box-sizing: border-box !important;
@@ -384,7 +369,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   max-width: 100% !important;
 }
 
-/* Alle set invoervelden opsluiten binnen hun container */
 .tmpl-sets-rows input,
 .set-input-row input,
 .exercise-sets-row input,
@@ -668,7 +652,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* --------------------------------------------------------------------------
-   11) CARDS & MAIN LAYOUT (STRIKT GEEN HORIZONTALE OVERFLOW)
+   11) CARDS & MAIN LAYOUT (HERSTELDE STANDAARD VARIABELEN VOOR GLASS TOGGLE)
    -------------------------------------------------------------------------- */
 #appSection {
   height: 100vh;
@@ -698,21 +682,20 @@ main {
 }
 
 .card-glass,
-.card {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--glass-border) !important;
-  border-radius: var(--radius) !important;
-  padding: 18px !important;
+.card,
+.workout-item,
+.progress-card {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 18px;
   margin-bottom: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-sizing: border-box !important;
-  max-width: 100% !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  max-width: 100%;
   overflow-x: hidden;
 }
 
-/* EXPLICIET OVERFLOW VISIBLE VOOR SPORTER SELECTIEKAART */
 .coach-select-card {
   overflow: visible !important;
   position: relative !important;
@@ -898,7 +881,6 @@ main {
   width: 100%;
 }
 
-/* Zwevende custom dropdown menu met vrije uitloop naar beneden */
 .custom-dropdown-menu,
 #customClientDropdownList {
   position: absolute !important;
@@ -931,7 +913,6 @@ main {
   color: var(--gold-accent) !important;
 }
 
-/* Sub-tabs op Coach View (100% verdeelde breedte onder elkaar) */
 #coachClientSubTabsContainer {
   display: flex !important;
   gap: 8px !important;
@@ -965,6 +946,26 @@ main {
   color: var(--gold-accent) !important;
   border: 1px solid var(--gold-accent) !important;
   font-weight: 700 !important;
+}
+
+.custom-dropdown-wrapper input[type="text"] {
+  width: 100% !important;
+  height: 42px !important;
+  padding: 10px 14px !important;
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  background: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--pill-radius) !important;
+  outline: none !important;
+  transition: var(--transition) !important;
+  box-sizing: border-box !important;
+}
+
+.custom-dropdown-wrapper input[type="text"]:focus {
+  border-color: var(--gold-accent) !important;
+  box-shadow: 0 0 0 2px rgba(255, 159, 10, 0.2) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -1006,4 +1007,76 @@ main {
 .stat-box-fine.active {
   border-color: var(--gold-accent) !important;
   background: rgba(255, 159, 10, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   16) GLASSMORPHISM TOGGLE THEME (EXPLICIETE TRANSPARANTIE OVERRIDES)
+   -------------------------------------------------------------------------- */
+body.glass-theme-active .card-glass,
+body.glass-theme-active .card,
+body.glass-theme-active .workout-item,
+body.glass-theme-active .progress-card,
+body.glass-theme-active .modal-card,
+body.glass-theme-active .stat-box-fine {
+  background: rgba(18, 25, 39, 0.40) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+body.glass-theme-active .inline-client-select,
+body.glass-theme-active .auth-select,
+body.glass-theme-active input[type="text"],
+body.glass-theme-active input[type="number"],
+body.glass-theme-active input[type="password"] {
+  background: rgba(26, 34, 52, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* AQM Switch Toggle Component */
+.aqm-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.aqm-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.aqm-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.aqm-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-muted);
+  transition: .3s;
+  border-radius: 50%;
+}
+
+input:checked + .aqm-slider {
+  background-color: rgba(255, 159, 10, 0.25);
+  border-color: var(--gold-accent);
+}
+
+input:checked + .aqm-slider:before {
+  transform: translateX(22px);
+  background-color: var(--gold-accent);
 }
