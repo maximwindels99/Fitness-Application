@@ -6,6 +6,7 @@
 import { getFullExerciseDatabase, addCustomExercise, deleteExerciseById } from '../data/exercisesData.js';
 import { generateUniqueId } from '../core/utils.js';
 import { updateCoachFabVisibility } from './coachNav.js';
+import { state } from '../core/state.js';
 
 let favoriteExerciseIds = JSON.parse(localStorage.getItem('aqm_favorite_exercises') || '[]');
 let isOnlyFavoritesFilterActive = false;
@@ -13,6 +14,30 @@ let selectedFormCategories = [];
 
 function saveFavoritesToStorage() {
   localStorage.setItem('aqm_favorite_exercises', JSON.stringify(favoriteExerciseIds));
+}
+
+/**
+ * Haalt de unieke custom categorieën op voor de momenteel ingelogde coach.
+ */
+function getCoachCustomCategories() {
+  const coachEmail = state.currentUser?.email || 'default';
+  return JSON.parse(localStorage.getItem(`aqm_custom_categories_${coachEmail}`) || '[]');
+}
+
+/**
+ * Slaat een nieuwe unieke categorie op voor de ingelogde coach.
+ */
+function saveCoachCustomCategory(newCat) {
+  if (!newCat || !newCat.trim()) return '';
+  const coachEmail = state.currentUser?.email || 'default';
+  const existing = getCoachCustomCategories();
+  const formatted = newCat.trim().charAt(0).toUpperCase() + newCat.trim().slice(1);
+
+  if (!existing.some(c => c.toLowerCase() === formatted.toLowerCase())) {
+    existing.push(formatted);
+    localStorage.setItem(`aqm_custom_categories_${coachEmail}`, JSON.stringify(existing));
+  }
+  return formatted;
 }
 
 /**
@@ -66,10 +91,110 @@ function renderSelectedFormCategoriesBadges() {
 }
 
 /**
+ * Verzamelt alle beschikbare categorieën (basis + database + coach-specifiek).
+ */
+function getAllAvailableCategories() {
+  const baseCategories = ['Borst', 'Rug', 'Benen', 'Schouders', 'Armen', 'Buik'];
+  const customCoachCats = getCoachCustomCategories();
+  const allExercises = getFullExerciseDatabase();
+  const exCats = allExercises.flatMap(ex => getExerciseCategoriesArray(ex));
+
+  return Array.from(new Set([...baseCategories, ...customCoachCats, ...exCats]))
+    .map(c => c.trim().charAt(0).toUpperCase() + c.trim().slice(1))
+    .filter((v, i, a) => a.findIndex(t => t.toLowerCase() === v.toLowerCase()) === i)
+    .sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Rendert de items in het formulier-uitklapmenu op basis van het typveld binnenin.
+ */
+function renderFormCatDropdownItems(filterTerm = '') {
+  const itemsContainer = document.getElementById('innerFormCatItemsList');
+  if (!itemsContainer) return;
+
+  const allCategories = getAllAvailableCategories();
+  const cleanTerm = filterTerm.trim();
+  const formattedTerm = cleanTerm ? cleanTerm.charAt(0).toUpperCase() + cleanTerm.slice(1) : '';
+
+  let html = '';
+
+  // Check of de getypte term nog niet exact bestaat in de bekende categorieën
+  if (cleanTerm !== '') {
+    const exactMatch = allCategories.some(c => c.toLowerCase() === cleanTerm.toLowerCase());
+    if (!exactMatch) {
+      html += `
+        <div class="custom-dropdown-item create-new-cat-item" data-new-cat="${formattedTerm}" style="display: flex; align-items: center; gap: 8px; color: var(--gold-accent); font-weight: 700; background: rgba(255, 159, 10, 0.12); border-radius: 8px; padding: 10px 12px; cursor: pointer; margin-bottom: 6px;">
+          <i class="fa-solid fa-plus"></i>
+          <span>"${formattedTerm}" toevoegen</span>
+        </div>
+      `;
+    }
+  }
+
+  let filteredCategories = allCategories;
+  if (cleanTerm) {
+    filteredCategories = allCategories.filter(c => c.toLowerCase().includes(cleanTerm.toLowerCase()));
+  }
+
+  if (filteredCategories.length === 0 && cleanTerm === '') {
+    html += '<div style="padding: 10px; color: var(--text-muted); font-size: 0.82rem; text-align: center;">Geen categorieën gevonden</div>';
+  } else {
+    filteredCategories.forEach(cat => {
+      const isSelected = selectedFormCategories.includes(cat);
+      html += `
+        <div class="custom-dropdown-item ${isSelected ? 'active' : ''}" data-cat="${cat}" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px 10px; border-radius: 6px; ${isSelected ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : ''}">
+          <span>${cat}</span>
+          ${isSelected ? '<i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>' : ''}
+        </div>
+      `;
+    });
+  }
+
+  itemsContainer.innerHTML = html;
+
+  // Event listener voor het aanmaken van een nieuwe categorie
+  const createBtn = itemsContainer.querySelector('.create-new-cat-item');
+  if (createBtn) {
+    createBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rawNewCat = createBtn.getAttribute('data-new-cat');
+      const savedCat = saveCoachCustomCategory(rawNewCat);
+
+      if (savedCat && !selectedFormCategories.includes(savedCat)) {
+        selectedFormCategories.push(savedCat);
+      }
+
+      const searchInput = document.getElementById('innerFormCatSearchInput');
+      if (searchInput) searchInput.value = '';
+
+      renderSelectedFormCategoriesBadges();
+      renderFormCatDropdownItems('');
+    });
+  }
+
+  // Event listeners voor bestaande categorieën
+  itemsContainer.querySelectorAll('.custom-dropdown-item[data-cat]').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const cat = item.getAttribute('data-cat');
+      
+      if (selectedFormCategories.includes(cat)) {
+        selectedFormCategories = selectedFormCategories.filter(c => c !== cat);
+      } else {
+        selectedFormCategories.push(cat);
+      }
+
+      renderSelectedFormCategoriesBadges();
+      renderFormCatDropdownItems(cleanTerm);
+    });
+  });
+}
+
+/**
  * Vult de custom categoriedropdowns (zowel voor de filter als voor het toevoegformulier).
  */
 export function populateExerciseCategoryDropdowns() {
-  const categories = ['Borst', 'Rug', 'Benen', 'Schouders', 'Armen', 'Buik'];
+  const allCategories = getAllAvailableCategories();
 
   // 1. Categoriefilter op het dashboard
   const filterSearchInput = document.getElementById('coachExerciseCategorySearchInput');
@@ -80,7 +205,7 @@ export function populateExerciseCategoryDropdowns() {
     const currentVal = filterHiddenInput ? filterHiddenInput.value : '';
     let filterHtml = `<div class="custom-dropdown-item ${!currentVal ? 'active' : ''}" data-cat="" style="${!currentVal ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : ''}">Alle Categorieën</div>`;
 
-    categories.forEach(cat => {
+    allCategories.forEach(cat => {
       const isSelected = currentVal.toLowerCase() === cat.toLowerCase();
       filterHtml += `<div class="custom-dropdown-item ${isSelected ? 'active' : ''}" data-cat="${cat}" style="${isSelected ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : ''}">${cat}</div>`;
     });
@@ -99,39 +224,27 @@ export function populateExerciseCategoryDropdowns() {
     });
   }
 
-  // 2. Formulier Multi-Categorie Selectie
+  // 2. Formulier Multi-Categorie Selectie (OPTIE A: Zoekbalk bovenaan de dropdown)
   const formDropdownList = document.getElementById('customNewExCategoryDropdownList');
 
   if (formDropdownList) {
-    let formHtml = '';
+    formDropdownList.innerHTML = `
+      <div style="padding-bottom: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--glass-border);">
+        <input type="text" id="innerFormCatSearchInput" placeholder="Zoek of typ categorie..." style="width: 100%; padding: 8px 12px; background: #1A2234; border: 1px solid var(--glass-border); color: #fff; border-radius: 8px; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+      </div>
+      <div id="innerFormCatItemsList" style="max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;"></div>
+    `;
 
-    categories.forEach(cat => {
-      const isSelected = selectedFormCategories.includes(cat);
-      formHtml += `
-        <div class="custom-dropdown-item ${isSelected ? 'active' : ''}" data-cat="${cat}" style="display: flex; justify-content: space-between; align-items: center; ${isSelected ? 'color: var(--gold-accent); background: rgba(255, 159, 10, 0.15); font-weight: 700;' : ''}">
-          <span>${cat}</span>
-          ${isSelected ? '<i class="fa-solid fa-check" style="font-size: 0.8rem;"></i>' : ''}
-        </div>
-      `;
-    });
-
-    formDropdownList.innerHTML = formHtml;
-
-    formDropdownList.querySelectorAll('.custom-dropdown-item').forEach(item => {
-      item.addEventListener('click', (e) => {
+    const innerSearchInput = document.getElementById('innerFormCatSearchInput');
+    if (innerSearchInput) {
+      innerSearchInput.addEventListener('input', (e) => {
         e.stopPropagation();
-        const cat = item.getAttribute('data-cat');
-        
-        if (selectedFormCategories.includes(cat)) {
-          selectedFormCategories = selectedFormCategories.filter(c => c !== cat);
-        } else {
-          selectedFormCategories.push(cat);
-        }
-
-        renderSelectedFormCategoriesBadges();
-        populateExerciseCategoryDropdowns();
+        renderFormCatDropdownItems(e.target.value);
       });
-    });
+      innerSearchInput.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    renderFormCatDropdownItems('');
   }
 }
 
@@ -527,7 +640,7 @@ function initCoachExerciseListeners() {
     });
   }
 
-  // Custom Categoriefilter Dropdown events
+  // Custom Categoriefilter Dropdown events op dashboard
   const filterSearchInput = document.getElementById('coachExerciseCategorySearchInput');
   const filterDropdownList = document.getElementById('customExerciseCategoryDropdownList');
   if (filterSearchInput && filterDropdownList) {
@@ -545,7 +658,7 @@ function initCoachExerciseListeners() {
     });
   }
 
-  // Custom Formulier Categorie Dropdown events
+  // Custom Formulier Categorie Dropdown Trigger events (OPTIE A)
   const formCatSearchInput = document.getElementById('newExCategorySearchInput');
   const formCatDropdownList = document.getElementById('customNewExCategoryDropdownList');
   if (formCatSearchInput && formCatDropdownList) {
@@ -554,6 +667,17 @@ function initCoachExerciseListeners() {
       const isVisible = formCatDropdownList.style.display === 'block';
       formCatDropdownList.style.display = isVisible ? 'none' : 'block';
       populateExerciseCategoryDropdowns();
+
+      if (!isVisible) {
+        setTimeout(() => {
+          const innerInput = document.getElementById('innerFormCatSearchInput');
+          if (innerInput) {
+            innerInput.value = '';
+            innerInput.focus();
+            renderFormCatDropdownItems('');
+          }
+        }, 50);
+      }
     });
 
     document.addEventListener('click', (e) => {
