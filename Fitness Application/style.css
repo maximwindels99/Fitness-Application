@@ -685,7 +685,7 @@ main {
 .card,
 .workout-item,
 .progress-card {
-  background: var(--bg-card);
+  background: var(--bg-card);/*possible effect*/
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 18px;
